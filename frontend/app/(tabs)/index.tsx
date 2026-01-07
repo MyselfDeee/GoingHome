@@ -15,6 +15,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import {
   useResponsive,
   getResponsiveFontSize,
@@ -36,6 +37,7 @@ const palette = {
 export default function LoginScreen() {
   const [email, setEmail] = useState('test@example.com');
   const [password, setPassword] = useState('TestPassword123!');
+  const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
   const router = useRouter();
@@ -107,14 +109,25 @@ export default function LoginScreen() {
               <Text style={[styles.label, { fontSize: getResponsiveFontSize(14, width) }]}>
                 Password
               </Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter your password"
-                secureTextEntry
-                style={[styles.input, { fontSize: getResponsiveFontSize(15, width), minHeight: MIN_TOUCH_TARGET }]}
-                placeholderTextColor={palette.muted}
-              />
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  secureTextEntry={!showPassword}
+                  style={[styles.input, styles.passwordInput, { fontSize: getResponsiveFontSize(15, width), minHeight: MIN_TOUCH_TARGET }]}
+                  placeholderTextColor={palette.muted}
+                />
+                <Pressable 
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons 
+                    name={showPassword ? 'eye' : 'eye-off'} 
+                    size={24} 
+                    color={palette.muted} 
+                  />
+                </Pressable>
+              </View>
             </View>
 
             <View style={[styles.actionsRow, isSmallPhone && styles.actionsRowStack]}>
@@ -271,6 +284,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: palette.text,
     minHeight: MIN_TOUCH_TARGET,
+  },
+  passwordContainer: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  passwordInput: {
+    flex: 1,
+    paddingRight: 45,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 12,
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: MIN_TOUCH_TARGET,
+    minWidth: MIN_TOUCH_TARGET,
   },
   actionsRow: {
     flexDirection: 'row',

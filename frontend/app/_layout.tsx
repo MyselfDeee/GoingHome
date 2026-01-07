@@ -36,6 +36,9 @@ export default function RootLayout() {
           <Stack.Screen name="fee-forecasting" options={{ headerShown: false }} />
           <Stack.Screen name="ai-assistant" options={{ headerShown: false }} />
           <Stack.Screen name="request-statement" options={{ headerShown: false }} />
+          <Stack.Screen name="admissions" options={{ headerShown: false }} />
+          <Stack.Screen name="announcements" options={{ headerShown: false }} />
+          <Stack.Screen name="profile" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

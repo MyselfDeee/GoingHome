@@ -116,6 +116,19 @@ export default function AIAssistant() {
           style={dynamicStyles.dropdownItem}
           onPress={() => {
             setMenuOpen(false);
+            router.push('/parent-dashboard' as never);
+          }}>
+          <Text style={dynamicStyles.dropdownIcon}>🏠</Text>
+          <View style={dynamicStyles.itemContent}>
+            <Text style={dynamicStyles.dropdownText}>Parent Dashboard</Text>
+            <Text style={dynamicStyles.dropdownSubtext}>Overview & payments</Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          style={dynamicStyles.dropdownItem}
+          onPress={() => {
+            setMenuOpen(false);
             router.push('/re-registration' as never);
           }}>
           <Text style={dynamicStyles.dropdownIcon}>📝</Text>
@@ -161,6 +174,45 @@ export default function AIAssistant() {
           <View style={dynamicStyles.itemContent}>
             <Text style={dynamicStyles.dropdownText}>Request Statement</Text>
             <Text style={dynamicStyles.dropdownSubtext}>Download records</Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          style={dynamicStyles.dropdownItem}
+          onPress={() => {
+            setMenuOpen(false);
+            router.push('/admissions' as never);
+          }}>
+          <Text style={dynamicStyles.dropdownIcon}>🎓</Text>
+          <View style={dynamicStyles.itemContent}>
+            <Text style={dynamicStyles.dropdownText}>Admissions</Text>
+            <Text style={dynamicStyles.dropdownSubtext}>Track applications</Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          style={dynamicStyles.dropdownItem}
+          onPress={() => {
+            setMenuOpen(false);
+            router.push('/announcements' as never);
+          }}>
+          <Text style={dynamicStyles.dropdownIcon}>📢</Text>
+          <View style={dynamicStyles.itemContent}>
+            <Text style={dynamicStyles.dropdownText}>Announcements</Text>
+            <Text style={dynamicStyles.dropdownSubtext}>School news & updates</Text>
+          </View>
+        </Pressable>
+
+        <Pressable
+          style={dynamicStyles.dropdownItem}
+          onPress={() => {
+            setMenuOpen(false);
+            router.push('/profile' as never);
+          }}>
+          <Text style={dynamicStyles.dropdownIcon}>👤</Text>
+          <View style={dynamicStyles.itemContent}>
+            <Text style={dynamicStyles.dropdownText}>Profile</Text>
+            <Text style={dynamicStyles.dropdownSubtext}>Manage your information</Text>
           </View>
         </Pressable>
       </Animated.View>

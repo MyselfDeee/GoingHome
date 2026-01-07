@@ -31,12 +31,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const savedToken = await AsyncStorage.getItem('authToken');
         if (savedToken) {
-          const isValid = await authService.verifyToken(savedToken);
-          if (isValid) {
-            const { user: userData } = await authService.getCurrentUser(savedToken);
-            setToken(savedToken);
-            setUser(userData);
-          } else {
+          // Add timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Auth check timeout')), 5000)
+          );
+          
+          try {
+            const isValid = await Promise.race([
+              authService.verifyToken(savedToken),
+              timeoutPromise
+            ]) as boolean;
+            
+            if (isValid) {
+              const userData = await Promise.race([
+                authService.getCurrentUser(savedToken),
+                timeoutPromise
+              ]) as { user: User };
+              
+              setToken(savedToken);
+              setUser(userData.user);
+            } else {
+              await AsyncStorage.removeItem('authToken');
+            }
+          } catch (timeoutError) {
+            console.warn('Auth check timed out, proceeding without authentication');
             await AsyncStorage.removeItem('authToken');
           }
         }

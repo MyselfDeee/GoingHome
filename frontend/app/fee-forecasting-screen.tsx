@@ -84,12 +84,82 @@ const FeeForecastingScreen = () => {
         <View style={styles.menuDivider} />
         <Pressable style={styles.dropdownItem} onPress={() => {
           setMenuOpen(false);
+          router.push('/parent-dashboard' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>🏠</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>Parent Dashboard</Text>
+            <Text style={styles.dropdownSubtext}>Overview & payments</Text>
+          </View>
+        </Pressable>
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
           router.push('/re-registration' as never);
         }}>
           <Text style={styles.dropdownIcon}>📝</Text>
           <View style={styles.itemContent}>
             <Text style={styles.dropdownText}>Re-registration</Text>
             <Text style={styles.dropdownSubtext}>Register learners</Text>
+          </View>
+        </Pressable>
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
+          router.push('/fee-forecasting' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>📊</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>Fee Forecasting</Text>
+            <Text style={styles.dropdownSubtext}>Budget planning</Text>
+          </View>
+        </Pressable>
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
+          router.push('/ai-assistant' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>🤖</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>AI Assistant</Text>
+            <Text style={styles.dropdownSubtext}>Get smart help</Text>
+          </View>
+        </Pressable>
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
+          router.push('/request-statement' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>📋</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>Request Statement</Text>
+            <Text style={styles.dropdownSubtext}>Download records</Text>
+          </View>
+        </Pressable>
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
+          router.push('/admissions' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>🎓</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>Admissions</Text>
+            <Text style={styles.dropdownSubtext}>Track applications</Text>
+          </View>
+        </Pressable>
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
+          router.push('/announcements' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>📢</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>Announcements</Text>
+            <Text style={styles.dropdownSubtext}>School news & updates</Text>
+          </View>
+        </Pressable>
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
+          router.push('/profile' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>👤</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>Profile</Text>
+            <Text style={styles.dropdownSubtext}>Manage your information</Text>
           </View>
         </Pressable>
       </Animated.View>

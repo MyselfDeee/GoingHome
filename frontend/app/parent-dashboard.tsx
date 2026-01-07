@@ -139,6 +139,17 @@ export default function ParentDashboard() {
             <Text style={styles.dropdownSubtext}>School news & updates</Text>
           </View>
         </Pressable>
+
+        <Pressable style={styles.dropdownItem} onPress={() => {
+          setMenuOpen(false);
+          router.push('/profile' as never);
+        }}>
+          <Text style={styles.dropdownIcon}>👤</Text>
+          <View style={styles.itemContent}>
+            <Text style={styles.dropdownText}>Profile</Text>
+            <Text style={styles.dropdownSubtext}>Manage your information</Text>
+          </View>
+        </Pressable>
       </Animated.View>
 
       <ScrollView contentContainerStyle={[styles.container, isSmall && styles.containerSmall]} showsVerticalScrollIndicator={false}>

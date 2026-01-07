@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import authRoutes from './routes/auth';
+import profileRoutes from './routes/profile';
 import testRoutes from './routes/test';
 import { errorHandler } from './middlewares/errorHandler';
 
@@ -22,6 +23,7 @@ app.get('/health', (_req, res) => {
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/profile', profileRoutes);
 app.use('/test', testRoutes);
 
 // Error handling middleware

@@ -40,8 +40,18 @@ export const authService = {
       password
     });
 
-    if (error || !authData.user) {
-      throw new Error(error?.message ?? 'Invalid email or password.');
+    if (error) {
+      console.error('Supabase login error:', {
+        message: error.message,
+        status: error.status,
+        email: email,
+      });
+      throw new Error(error.message ?? 'Invalid email or password.');
+    }
+
+    if (!authData.user) {
+      console.error('No user returned from Supabase login for email:', email);
+      throw new Error('Login failed - user not found.');
     }
 
     if (!authData.user.email) {
