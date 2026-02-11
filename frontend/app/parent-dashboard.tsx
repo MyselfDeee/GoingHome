@@ -1,37 +1,31 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions, SafeAreaView, Animated } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import NoticesScreen from '../components/NoticesScreen';
+import SideMenu from '../components/SideMenu';
 
 const palette = {
-  background: '#f5f7fb',
-  card: '#ffffff',
-  border: '#e5e7eb',
-  primary: '#1f64f2',
-  success: '#1db954',
-  danger: '#f87171',
-  muted: '#6b7280',
-  text: '#1f2937',
-  badgeBlue: '#e5edff',
-  badgeRed: '#ffecec',
-  gradientRed: '#ffecec',
-  gradientBlue: '#e9f2ff',
+  background: '#F0F2F5', // Slightly darker/blueish gray for contrast
+  card: '#FFFFFF',
+  text: '#1F2937', // Gray-800
+  textSecondary: '#6B7280', // Gray-500
+  primary: '#4F46E5', // Indigo-600
+  success: '#10B981', // Emerald-500
+  danger: '#EF4444', // Red-500
+  warning: '#F97316', // Orange-500
+  warningLight: '#FFEDD5', // Orange-100
+  successLight: '#D1FAE5', // Emerald-100
+  dangerLight: '#FEE2E2', // Red-100
+  border: '#E5E7EB',
 };
 
 export default function ParentDashboard() {
-  const { width, height } = useWindowDimensions();
-  const isSmall = width < 480;
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
-
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
+  const parentName = "Mr. Rikhotso"; // Placeholder for dynamic data
 
   const handleLogout = () => {
     router.push('/(tabs)' as never);
@@ -39,436 +33,511 @@ export default function ParentDashboard() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
+      
+      {/* Top Navigation Bar */}
+      <View style={styles.topNavbar}>
+        <View style={styles.navLeft}>
+           <Pressable onPress={() => setMenuOpen(true)} style={styles.menuBtn}>
+              <Ionicons name="menu" size={28} color={palette.text} />
+           </Pressable>
+           <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeLabel}>Welcome,</Text>
+              <Text style={styles.welcomeName}>{parentName}</Text>
+           </View>
         </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
+        <Pressable onPress={() => router.push('/profile' as never)}>
+          <View style={styles.profileImageContainer}>
+             <Text style={styles.profileInitials}>MR</Text>
+          </View>
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && (
-        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />
-      )}
-      <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={styles.menuHeader}>
-          <Text style={styles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        <View style={styles.menuDivider} />
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/re-registration' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📝</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Re-registration</Text>
-            <Text style={styles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/fee-forecasting' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📊</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Fee Forecasting</Text>
-            <Text style={styles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/ai-assistant' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>🤖</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>AI Assistant</Text>
-            <Text style={styles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/request-statement' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📋</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Request Statement</Text>
-            <Text style={styles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/admissions' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>🎓</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Admissions</Text>
-            <Text style={styles.dropdownSubtext}>Track applications</Text>
-          </View>
-        </Pressable>
-
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          // Navigate to announcements/notices
-          router.push('/announcements' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📢</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Announcements</Text>
-            <Text style={styles.dropdownSubtext}>School news & updates</Text>
-          </View>
-        </Pressable>
-
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/profile' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>👤</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Profile</Text>
-            <Text style={styles.dropdownSubtext}>Manage your information</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
-
-      <ScrollView contentContainerStyle={[styles.container, isSmall && styles.containerSmall]} showsVerticalScrollIndicator={false}>
-        {/* Page Header */}
-        <View style={styles.pageHeader}>
-          <Text style={styles.pageTitle}>Parent Portal</Text>
-          <Text style={styles.pageSubtitle}>Financial Overview & Payment Management</Text>
-        </View>
-
-        {/* Metric Cards */}
-        <View style={[styles.metricsRow, isSmall && styles.metricsRowSmall]}>
-          <MetricCard title="Total Learners" value="1" accent="#2563EB" bgColor="#EFF6FF" textColor="#2563EB" />
-          <MetricCard title="Total Monthly Fees" value="R 2,700" accent="#9333EA" bgColor="#F3E8FF" textColor="#9333EA" />
-          <MetricCard title="Outstanding Amount" value="R 2,700" accent="#4F46E5" bgColor="#EEF2FF" textColor="#4F46E5" />
-        </View>
-
-        {/* Main Content */}
-        <View style={[styles.mainGrid, isSmall && styles.mainGridStack]}>
-          {/* Left Column */}
-          <View style={[styles.leftCol, isSmall && styles.fullWidth]}>
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <View>
-                  <Text style={styles.sectionTitle}>Learner Overview</Text>
-                  <Text style={styles.sectionSubtitle}>Monthly fees and payments</Text>
-                </View>
-                <Pressable style={styles.exportBtn}>
-                  <Text style={styles.exportBtnText}>Export</Text>
-                </Pressable>
+        {/* Header Section */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerTopRow}>
+            <View style={styles.logoTitleContainer}>
+              <View style={styles.logoIconContainer}>
+                 <Ionicons name="home" size={20} color="#4F46E5" />
+                 <View style={styles.logoBadge} />
               </View>
+              <Text style={styles.headerTitle}>Parent Portal</Text>
+            </View>
+            <View style={styles.headerIcons}>
+              <Pressable style={styles.iconButton}>
+                <Ionicons name="notifications-outline" size={24} color="#6B7280" />
+              </Pressable>
+              <Pressable style={styles.iconButton}>
+                <Ionicons name="settings-outline" size={24} color="#6B7280" />
+              </Pressable>
+            </View>
+          </View>
+          
+          <View style={styles.headerSubtitleContainer}>
+            <Text style={styles.headerSubtitle}>Financial Overview</Text>
+            <Text style={styles.headerSubtitleLight}>& Payment Management</Text>
+          </View>
+        </View>
 
-              <View style={styles.studentCard}>
-                <View style={[styles.studentHeader, isSmall && styles.studentHeaderColumn]}>
-                  <View style={styles.studentInfo}>
-                    <View style={styles.studentAvatar}>
-                      <Text style={styles.studentAvatarText}>MR</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.studentName}>Mikhenso Rikhotso</Text>
-                      <Text style={styles.studentMeta}>12 • ID: 2020155260088</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.badgeRow, isSmall && styles.badgeRowStack]}>
-                    <Badge text="Facility Linked" color={palette.badgeBlue} textColor={palette.primary} />
-                    <Badge text="Overdue" color={palette.badgeRed} textColor={palette.danger} />
-                  </View>
-                </View>
-
-                <View style={[styles.feeRow, isSmall && styles.feeRowColumn]}>
-                  <FeePill label="Monthly Fee" value="R 2,700" color="#FFF2E0" />
-                  <FeePill label="Paid" value="R 0" color="#FEFBD4" />
-                  <FeePill label="Outstanding" value="R 2,700" color="#E4F0FF" />
-                </View>
-
-                <View style={styles.progressTrack}>
-                  <View style={styles.progressFill} />
-                </View>
-
-                <View style={[styles.nextRow, isSmall && styles.nextRowStack]}>
-                  <Text style={styles.nextText}>Next: <Text style={styles.nextBold}>30/12/2025</Text></Text>
-                  <Pressable>
-                    <Text style={styles.linkText}>View Details</Text>
-                  </Pressable>
-                </View>
-              </View>
+        {/* Summary Cards */}
+        <View style={styles.summaryCardsContainer}>
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryIconContainer}>
+               <Ionicons name="people" size={24} color="#6B7280" />
+            </View>
+            <View style={styles.summaryTextContainer}>
+                <Text style={styles.summaryLabel}>Total Learners</Text>
+                <Text style={styles.summaryValue}>1</Text>
             </View>
           </View>
 
-          {/* Right Column */}
-          <View style={[styles.rightCol, isSmall && styles.fullWidth]}>
-            {/* Fee Breakdown Card */}
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Fee Breakdown</Text>
-              <Text style={styles.sectionSubtitle}>School fees structure</Text>
-              <View style={styles.feeList}>
-                <FeeItem label="Annual Fee" value="R 32,400" color="#2563eb" />
-                <FeeItem label="Term Fee" value="R 8,100" color="#10b981" />
-                <FeeItem label="Registration" value="R 800" color="#f59e0b" />
-                <FeeItem label="Re-registration" value="R 400" color="#fb923c" />
-                <FeeItem label="Sport Fee" value="R 300" color="#6b7280" />
-              </View>
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total Monthly</Text>
-                <Text style={styles.totalValue}>R 2,700</Text>
-              </View>
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryIconContainer}>
+              <Ionicons name="wallet" size={24} color="#3B82F6" />
             </View>
+            <View style={styles.summaryTextContainer}>
+                <Text style={styles.summaryLabel}>Total Monthly Fees</Text>
+                <Text style={styles.summaryValue}>R 2,700</Text>
+            </View>
+          </View>
 
-            {/* Upcoming Payments Card */}
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Upcoming Payments</Text>
-              <View style={styles.upcomingCard}>
-                <View>
-                  <Text style={styles.upcomingName}>Mikhenso Rikhotso</Text>
-                  <Text style={styles.upcomingMeta}>Due: 30/12/2025</Text>
+          <View style={styles.summaryCard}>
+             <View style={styles.summaryIconContainer}>
+               <Ionicons name="alert-circle" size={24} color="#F97316" />
+             </View>
+            <View style={styles.summaryTextContainer}>
+                <Text style={styles.summaryLabel}>Outstanding Amount</Text>
+                <View style={styles.outstandingBadge}>
+                    <Text style={styles.outstandingValue}>R 2,700</Text>
                 </View>
-                <Text style={styles.upcomingAmount}>R 2,700</Text>
-                <Pressable style={styles.payBtn}>
-                  <Text style={styles.payBtnText}>Make Payment</Text>
-                </Pressable>
-              </View>
             </View>
           </View>
         </View>
 
-        {/* Announcements Section */}
-        <View style={styles.announcementsSection}>
-          <NoticesScreen />
+        <Text style={styles.sectionTitle}>Learner Overview</Text>
+
+        {/* Learner Card */}
+        <View style={styles.learnerCard}>
+           <View style={styles.learnerHeader}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>MR</Text>
+              </View>
+              <View style={styles.learnerInfo}>
+                 <Text style={styles.learnerName}>Mikhenso Rikhotso</Text>
+                 <Text style={styles.learnerDetails}>Grade 12 • ID: 2020155260088</Text>
+                 
+                 <View style={styles.statusRow}>
+                   <View style={[styles.statusBadge, { backgroundColor: palette.success }]}>
+                      <Ionicons name="checkmark-circle" size={12} color="white" />
+                      <Text style={styles.statusTextWhite}>Facility Linked</Text>
+                   </View>
+                   <View style={[styles.statusBadge, { backgroundColor: palette.danger }]}>
+                      <Ionicons name="alert-circle" size={12} color="white" />
+                      <Text style={styles.statusTextWhite}>Overdue</Text>
+                   </View>
+                 </View>
+              </View>
+           </View>
+
+           <View style={styles.divider} />
+
+           <View style={styles.financialRows}>
+              <View style={styles.financialRow}>
+                 <Text style={styles.financialLabel}>Monthly Fee</Text>
+                 <Text style={styles.financialValue}>R 2,700</Text>
+              </View>
+              <View style={styles.dividerLight} />
+              <View style={styles.financialRow}>
+                 <Text style={styles.financialLabel}>Paid</Text>
+                 <Text style={styles.financialValue}>R 0</Text>
+              </View>
+              <View style={styles.dividerLight} />
+              <View style={styles.financialRow}>
+                 <Text style={styles.financialLabel}>Outstanding</Text>
+                 <Text style={styles.financialValue}>R 2,700</Text>
+              </View>
+              <View style={styles.dividerLight} />
+              <View style={styles.financialRow}>
+                 <Text style={styles.financialLabel}>Next Due Date</Text>
+                 <Text style={styles.financialValueBold}>30/12/2025</Text>
+              </View>
+           </View>
+
+           <View style={styles.actionRow}>
+              <Pressable style={styles.viewDetailsBtn}>
+                 <Text style={styles.viewDetailsText}>View Details</Text>
+              </Pressable>
+              <Pressable style={styles.externalLinkBtn}>
+                 <Ionicons name="open-outline" size={20} color="#6B7280" />
+              </Pressable>
+           </View>
         </View>
+
+        <Text style={styles.sectionTitle}>Fee Breakdown</Text>
+        <Text style={styles.sectionSubtitle}>School Fees Structure</Text>
+
+        {/* Fee Breakdown Card */}
+        <View style={styles.breakdownCard}>
+           <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Annual Fee</Text>
+              <Text style={styles.breakdownValue}>R 32,400</Text>
+           </View>
+           <View style={styles.divider} />
+           <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Term Fee</Text>
+              <Text style={styles.breakdownValue}>R 8,100</Text>
+           </View>
+        </View>
+
+        {/* Notices Section (Kept from previous, but de-emphasized compared to financial data) */}
+        <View style={styles.noticesContainer}>
+            <NoticesScreen />
+        </View>
+
+        <View style={{ height: 40 }} /> 
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function MetricCard({ title, value, accent, bgColor, textColor, danger }: { title: string; value: string; accent: string; bgColor?: string; textColor?: string; danger?: boolean }) {
-  return (
-    <View style={[styles.metricCard, { borderColor: accent, backgroundColor: bgColor || '#fff' }]}>
-      <Text style={styles.metricTitle}>{title}</Text>
-      <Text style={[styles.metricValue, { color: textColor || palette.text }]}>{value}</Text>
-    </View>
-  );
-}
-
-function Badge({ text, color, textColor }: { text: string; color: string; textColor: string }) {
-  return (
-    <View style={[styles.badge, { backgroundColor: color }]}>
-      <Text style={[styles.badgeText, { color: textColor }]}>{text}</Text>
-    </View>
-  );
-}
-
-function FeePill({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <View style={[styles.pill, { backgroundColor: color }]}>
-      <Text style={styles.pillLabel}>{label}</Text>
-      <Text style={styles.pillValue}>{value}</Text>
-    </View>
-  );
-}
-
-function FeeItem({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <View style={styles.feeItem}>
-      <View style={styles.feeItemLeft}>
-        <View style={[styles.dot, { backgroundColor: color }]} />
-        <Text style={styles.feeItemLabel}>{label}</Text>
-      </View>
-      <Text style={styles.feeItemValue}>{value}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: palette.background },
-  container: { padding: 16, gap: 16 },
-  containerSmall: { padding: 12, gap: 12 },
-  topBar: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: palette.background,
+  },
+  // Top Navbar Styles
+  topNavbar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
-  },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  hamburgerIcon: { fontSize: 24, color: palette.text },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  logoBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoLetter: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  brandTitle: { color: palette.text, fontSize: 15, fontWeight: '700' },
-  brandSubtitle: { color: palette.muted, fontSize: 11 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    justifyContent: 'center',
-  },
-  logoutIcon: { fontSize: 18, color: '#dc2626' },
-  logoutText: { color: '#dc2626', fontWeight: '600', fontSize: 12 },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 999,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1000,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    shadowOffset: { width: 3, height: 0 },
-    paddingTop: 20,
-  },
-  menuHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
+    backgroundColor: palette.background,
+    zIndex: 10,
   },
-  menuTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+  navLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  menuBtn: {
+    padding: 4,
+  },
+  welcomeContainer: {
+    justifyContent: 'center',
+  },
+  welcomeLabel: {
+    fontSize: 12,
+    color: palette.textSecondary,
+    fontWeight: '500',
+  },
+  welcomeName: {
+    fontSize: 16,
+    fontWeight: '700',
     color: palette.text,
   },
-  closeIcon: {
-    fontSize: 24,
-    color: palette.muted,
-    fontWeight: '600',
+  profileImageContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E0E7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
   },
-  menuDivider: {
-    height: 1,
-    backgroundColor: palette.border,
-    marginHorizontal: 16,
-    marginVertical: 8,
+  profileInitials: {
+    color: palette.primary,
+    fontWeight: '700',
+    fontSize: 14,
   },
-  dropdownItem: {
+  // Existing styles continue
+  scrollContent: {
+    padding: 20,
+  },
+  headerContainer: {
+    backgroundColor: palette.card,
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  logoTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginHorizontal: 10,
-    marginBottom: 4,
-    borderRadius: 10,
-    backgroundColor: '#f8f9fa',
-    gap: 14,
   },
-  dropdownIcon: { fontSize: 28 },
-  itemContent: {
+  logoIconContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    position: 'relative',
+  },
+  logoBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 10,
+    height: 10,
+    backgroundColor: '#F59E0B',
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#fff',
+  }, 
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: palette.text,
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 4,
+  },
+  headerSubtitleContainer: {
+    marginTop: 4,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: palette.textSecondary,
+    fontWeight: '500',
+  },
+  headerSubtitleLight: {
+    fontSize: 16,
+    color: palette.textSecondary,
+    fontWeight: '400',
+  },
+  // Summary Cards
+  summaryCardsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+    flexWrap: 'wrap', // Allow wrapping if needed on small screens
+    justifyContent: 'space-between',
+  },
+  summaryCard: {
+    flex: 1,
+    minWidth: 100,
+    backgroundColor: palette.card,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  summaryIconContainer: {
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  summaryTextContainer: {
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: palette.textSecondary,
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  summaryValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: palette.text,
+  },
+  outstandingBadge: {
+    backgroundColor: palette.warning,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 2,
+  },
+  outstandingValue: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  // Section Titles
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: palette.text,
+    marginBottom: 12,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: palette.textSecondary,
+    marginTop: -8,
+    marginBottom: 12,
+  },
+  // Learner Card
+  learnerCard: {
+    backgroundColor: palette.card,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  learnerHeader: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#78869b', // Slate-500 roughly
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  learnerInfo: {
     flex: 1,
     justifyContent: 'center',
   },
-  dropdownText: { fontSize: 15, fontWeight: '700', color: palette.text },
-  dropdownSubtext: { fontSize: 12, color: palette.muted, marginTop: 2 },
-  pageHeader: { marginBottom: 8 },
-  pageTitle: { fontSize: 22, fontWeight: '800', color: palette.text },
-  pageSubtitle: { color: palette.muted, fontSize: 12, marginTop: 2 },
-  metricsRow: { flexDirection: 'row', gap: 12, justifyContent: 'space-between' },
-  metricsRowSmall: { flexDirection: 'row', gap: 8, justifyContent: 'space-between' },
-  metricCard: { flex: 1, borderRadius: 10, padding: 12, borderWidth: 1, backgroundColor: '#fff', minHeight: 90 },
-  metricTitle: { color: palette.muted, fontSize: 11, marginBottom: 6, fontWeight: '500' },
-  metricValue: { color: palette.text, fontSize: 16, fontWeight: '700' },
-  mainGrid: { flexDirection: 'row', gap: 12 },
-  mainGridStack: { flexDirection: 'column' },
-  fullWidth: { width: '100%' },
-  leftCol: { flex: 2 },
-  rightCol: { flex: 1, gap: 12 },
-  card: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: palette.border, padding: 14, gap: 12 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: palette.text },
-  sectionSubtitle: { color: palette.muted, fontSize: 11, marginTop: 2 },
-  exportBtn: { backgroundColor: palette.primary, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 },
-  exportBtnText: { color: '#fff', fontWeight: '600', fontSize: 12 },
-  studentCard: { backgroundColor: '#f9fafb', borderRadius: 10, borderWidth: 1, borderColor: palette.border, padding: 12, gap: 10 },
-  studentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 },
-  studentHeaderColumn: { flexDirection: 'column' },
-  studentInfo: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  studentAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: palette.badgeBlue, justifyContent: 'center', alignItems: 'center' },
-  studentAvatarText: { color: palette.primary, fontWeight: '700', fontSize: 12 },
-  studentName: { color: palette.text, fontWeight: '700', fontSize: 14 },
-  studentMeta: { color: palette.muted, fontSize: 11 },
-  badgeRow: { flexDirection: 'row', gap: 6 },
-  badgeRowStack: { width: '100%', marginTop: 6 },
-  badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
-  badgeText: { fontSize: 10, fontWeight: '700' },
-  feeRow: { flexDirection: 'row', gap: 8 },
-  feeRowColumn: { flexDirection: 'column' },
-  pill: { flex: 1, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: palette.border },
-  pillLabel: { color: palette.muted, fontSize: 11, marginBottom: 4 },
-  pillValue: { color: palette.text, fontWeight: '700', fontSize: 13 },
-  progressTrack: { height: 8, borderRadius: 4, backgroundColor: '#e5e7eb', overflow: 'hidden' },
-  progressFill: { height: '100%', width: '25%', backgroundColor: palette.primary },
-  nextRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  nextRowStack: { flexDirection: 'column', alignItems: 'flex-start', gap: 8 },
-  nextText: { color: palette.text, fontSize: 12 },
-  nextBold: { fontWeight: '700' },
-  linkText: { color: palette.primary, fontWeight: '700', fontSize: 12 },
-  feeList: { gap: 10 },
-  feeItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
-  feeItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  feeItemLabel: { color: palette.text, fontSize: 12 },
-  feeItemValue: { color: palette.text, fontWeight: '700', fontSize: 12 },
-  totalRow: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: palette.border, flexDirection: 'row', justifyContent: 'space-between' },
-  totalLabel: { color: palette.muted, fontWeight: '600', fontSize: 12 },
-  totalValue: { color: palette.text, fontWeight: '800', fontSize: 14 },
-  upcomingCard: { borderWidth: 1, borderColor: palette.border, borderRadius: 8, padding: 10, gap: 8, backgroundColor: '#f9fafb' },
-  upcomingName: { color: palette.text, fontWeight: '700', fontSize: 13 },
-  upcomingMeta: { color: palette.muted, fontSize: 11 },
-  upcomingAmount: { color: palette.success, fontWeight: '800', fontSize: 15, marginVertical: 4 },
-  payBtn: { backgroundColor: palette.primary, paddingVertical: 10, borderRadius: 6, alignItems: 'center' },
-  payBtnText: { color: '#fff', fontWeight: '700', fontSize: 12 },
-  announcementsSection: { marginTop: 8, borderTopWidth: 1, borderTopColor: palette.border, paddingTop: 16 },
+  learnerName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: palette.text,
+    marginBottom: 4,
+  },
+  learnerDetails: {
+    fontSize: 14,
+    color: palette.textSecondary,
+    marginBottom: 8,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  statusTextWhite: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: palette.border,
+    marginVertical: 12,
+  },
+  dividerLight: {
+    height: 1,
+    backgroundColor: '#F3F4F6', // Very light gray
+    marginVertical: 8,
+  },
+  financialRows: {
+    marginBottom: 16,
+  },
+  financialRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  financialLabel: {
+    fontSize: 14,
+    color: palette.textSecondary,
+  },
+  financialValue: {
+    fontSize: 14,
+    color: palette.text,
+    fontWeight: '500',
+  },
+  financialValueBold: {
+    fontSize: 14,
+    color: palette.text,
+    fontWeight: '700',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  viewDetailsBtn: {
+    flex: 1,
+    backgroundColor: palette.primary,
+    paddingVertical: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewDetailsText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  externalLinkBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: palette.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FAFAFA',
+  },
+  // Fee Breakdown
+  breakdownCard: {
+    backgroundColor: palette.card,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 24, // Spacing before notices
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  breakdownLabel: {
+    fontSize: 15,
+    color: palette.textSecondary,
+  },
+  breakdownValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: palette.text,
+  },
+  noticesContainer: {
+    marginTop: 0,
+  }
 });
 

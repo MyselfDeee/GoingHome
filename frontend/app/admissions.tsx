@@ -1,6 +1,8 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View, Pressable, SafeAreaView, useWindowDimensions, Animated } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions, Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import SideMenu from '../components/SideMenu';
 
 interface AdmissionApplication {
   id: string;
@@ -55,15 +57,6 @@ export default function AdmissionsScreen() {
   const [application, setApplication] = React.useState<AdmissionApplication | null>(sampleApplication);
   const [loading, setLoading] = React.useState(false);
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
-
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
 
   React.useEffect(() => {
     // Simulate fetching admissions data
@@ -126,109 +119,7 @@ export default function AdmissionsScreen() {
           </Pressable>
         </View>
 
-        {/* Dropdown Menu - Slide from left */}
-        {menuOpen && <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />}
-        <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-          <View style={styles.menuHeader}>
-            <Text style={styles.menuTitle}>Menu</Text>
-            <Pressable onPress={() => setMenuOpen(false)}>
-              <Text style={styles.closeIcon}>✕</Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.menuDivider} />
-
-          <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setMenuOpen(false);
-              router.push('/parent-dashboard' as never);
-            }}>
-            <Text style={styles.dropdownIcon}>🏠</Text>
-            <View style={styles.itemContent}>
-              <Text style={styles.dropdownText}>Parent Dashboard</Text>
-              <Text style={styles.dropdownSubtext}>Overview & payments</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setMenuOpen(false);
-              router.push('/re-registration' as never);
-            }}>
-            <Text style={styles.dropdownIcon}>📝</Text>
-            <View style={styles.itemContent}>
-              <Text style={styles.dropdownText}>Re-registration</Text>
-              <Text style={styles.dropdownSubtext}>Register learners</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setMenuOpen(false);
-              router.push('/fee-forecasting' as never);
-            }}>
-            <Text style={styles.dropdownIcon}>📊</Text>
-            <View style={styles.itemContent}>
-              <Text style={styles.dropdownText}>Fee Forecasting</Text>
-              <Text style={styles.dropdownSubtext}>Budget planning</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setMenuOpen(false);
-              router.push('/ai-assistant' as never);
-            }}>
-            <Text style={styles.dropdownIcon}>🤖</Text>
-            <View style={styles.itemContent}>
-              <Text style={styles.dropdownText}>AI Assistant</Text>
-              <Text style={styles.dropdownSubtext}>Get smart help</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setMenuOpen(false);
-              router.push('/request-statement' as never);
-            }}>
-            <Text style={styles.dropdownIcon}>📋</Text>
-            <View style={styles.itemContent}>
-              <Text style={styles.dropdownText}>Request Statement</Text>
-              <Text style={styles.dropdownSubtext}>Download records</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setMenuOpen(false);
-              router.push('/announcements' as never);
-            }}>
-            <Text style={styles.dropdownIcon}>📢</Text>
-            <View style={styles.itemContent}>
-              <Text style={styles.dropdownText}>Announcements</Text>
-              <Text style={styles.dropdownSubtext}>School news & updates</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            style={styles.dropdownItem}
-            onPress={() => {
-              setMenuOpen(false);
-              router.push('/profile' as never);
-            }}>
-            <Text style={styles.dropdownIcon}>👤</Text>
-            <View style={styles.itemContent}>
-              <Text style={styles.dropdownText}>Profile</Text>
-              <Text style={styles.dropdownSubtext}>Manage your information</Text>
-            </View>
-          </Pressable>
-        </Animated.View>
+        <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={() => router.push('/(tabs)' as never)} />
         <View style={styles.emptyStateContainer}>
           <Text style={styles.emptyStateIcon}>📭</Text>
           <Text style={styles.emptyStateTitle}>No Active Applications</Text>
@@ -274,109 +165,7 @@ export default function AdmissionsScreen() {
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />}
-      <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={styles.menuHeader}>
-          <Text style={styles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.menuDivider} />
-
-        <Pressable
-          style={styles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/parent-dashboard' as never);
-          }}>
-          <Text style={styles.dropdownIcon}>🏠</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Parent Dashboard</Text>
-            <Text style={styles.dropdownSubtext}>Overview & payments</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={styles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/re-registration' as never);
-          }}>
-          <Text style={styles.dropdownIcon}>📝</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Re-registration</Text>
-            <Text style={styles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={styles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/fee-forecasting' as never);
-          }}>
-          <Text style={styles.dropdownIcon}>📊</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Fee Forecasting</Text>
-            <Text style={styles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={styles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/ai-assistant' as never);
-          }}>
-          <Text style={styles.dropdownIcon}>🤖</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>AI Assistant</Text>
-            <Text style={styles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={styles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/request-statement' as never);
-          }}>
-          <Text style={styles.dropdownIcon}>📋</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Request Statement</Text>
-            <Text style={styles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={styles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/announcements' as never);
-          }}>
-          <Text style={styles.dropdownIcon}>📢</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Announcements</Text>
-            <Text style={styles.dropdownSubtext}>School news & updates</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={styles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/profile' as never);
-          }}>
-          <Text style={styles.dropdownIcon}>👤</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Profile</Text>
-            <Text style={styles.dropdownSubtext}>Manage your information</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={() => router.push('/(tabs)' as never)} />
 
       <ScrollView
         contentContainerStyle={[styles.container, isSmall && styles.containerSmall]}

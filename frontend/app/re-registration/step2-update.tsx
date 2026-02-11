@@ -5,755 +5,680 @@ import {
   Text,
   View,
   Pressable,
-  SafeAreaView,
   TextInput,
   useWindowDimensions,
-  Animated,
+  Platform,
+  StatusBar,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import ProgressTracker from '@/components/re-registration/ProgressTracker';
-import StudentCard from '@/components/re-registration/StudentCard';
+import { Ionicons } from '@expo/vector-icons';
+import SideMenu from '../../components/SideMenu';
 import SuccessModal from '@/components/re-registration/SuccessModal';
 
+// Consistent Palette
 const palette = {
-  background: '#f0f4f8',
-  card: '#ffffff',
-  cardLight: '#f8fafc',
-  border: '#e2e8f0',
-  primary: '#2563eb',
-  primaryLight: '#dbeafe',
-  primaryDark: '#1d4ed8',
-  success: '#059669',
-  danger: '#dc2626',
-  muted: '#64748b',
-  text: '#0f172a',
-  textSecondary: '#475569',
-  textMuted: '#94a3b8',
+  background: '#F9FAFC', 
+  card: '#FFFFFF',
+  text: '#1E293B',
+  textSecondary: '#64748B', 
+  textMuted: '#94A3B8',
+  primary: '#6366F1',
+  primaryLight: '#EEF2FF',
+  border: '#E2E8F0',
+  success: '#10B981',
+  warningBg: '#FFFBEB',
+  warningText: '#B45309',
+  shadow: '#0F172A',
+  inputBg: '#F8FAFC',
 };
 
-const steps = [
-  { number: 1, title: 'Select Children', subtitle: 'Choose students to re-register' },
-  { number: 2, title: 'Update Details', subtitle: 'Review and update information' },
-  { number: 3, title: 'Review & Submit', subtitle: 'Confirm and submit' },
+// Mock Students Data
+const mockStudents = [
+  {
+    id: '1',
+    initials: 'MR',
+    firstName: 'Mikhenso',
+    lastName: 'Rikhotso',
+    currentGrade: '11',
+    nextGrade: '12',
+    studentId: '2020155260088',
+  },
+  {
+    id: '2',
+    initials: 'TR',
+    firstName: 'Tlangelani',
+    lastName: 'Rikhotso',
+    currentGrade: '9',
+    nextGrade: '10',
+    studentId: '2022455210044',
+  }
 ];
+
+interface StudentFormProps {
+    student: typeof mockStudents[0];
+    isOpen: boolean;
+    onToggle: () => void;
+}
+
+const StudentFormAccordion = ({ student, isOpen, onToggle }: StudentFormProps) => {
+    // Form state would conceptually be managed here or lifted up. 
+    // For UI demonstration, we render the layout static inputs.
+    
+    return (
+        <View style={[styles.accordionCard, isOpen && styles.accordionCardOpen]}>
+            <Pressable 
+                style={[styles.accordionHeader, isOpen && styles.accordionHeaderOpen]} 
+                onPress={onToggle}
+            >
+                <View style={styles.accordionHeaderLeft}>
+                    <View style={styles.avatarCircle}>
+                        <Text style={styles.avatarText}>{student.initials}</Text>
+                    </View>
+                    <View>
+                        <Text style={styles.studentName}>{student.firstName} {student.lastName}</Text>
+                        <Text style={styles.studentId}>ID: {student.studentId} • Grade {student.currentGrade} to {student.nextGrade}</Text>
+                    </View>
+                </View>
+                <Ionicons 
+                    name={isOpen ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color={palette.textSecondary} 
+                />
+            </Pressable>
+
+            {isOpen && (
+                <View style={styles.accordionContent}>
+                    {/* Section 1: Personal Details */}
+                    <View style={styles.formSection}>
+                        <Text style={styles.sectionTitle}>Personal Details</Text>
+                        
+                        <View style={styles.inputRow}>
+                             <View style={styles.inputGroup}>
+                                <Text style={styles.label}>First Name</Text>
+                                <TextInput 
+                                    style={styles.input} 
+                                    value={student.firstName} 
+                                    editable={false} // Demo readonly
+                                />
+                             </View>
+                             <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Last Name</Text>
+                                <TextInput 
+                                    style={styles.input} 
+                                    value={student.lastName}
+                                    editable={false} 
+                                />
+                             </View>
+                        </View>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Student Email</Text>
+                            <TextInput 
+                                style={styles.input} 
+                                placeholder="Enter student email"
+                                keyboardType="email-address"
+                            />
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Section 2: Contact Info */}
+                    <View style={styles.formSection}>
+                        <Text style={styles.sectionTitle}>Emergency Contact</Text>
+                        <View style={styles.inputRow}>
+                             <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Contact Name</Text>
+                                <TextInput style={styles.input} placeholder="Parent/Guardian Name" />
+                             </View>
+                             <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Phone Number</Text>
+                                <TextInput style={styles.input} placeholder="+27 ..." keyboardType="phone-pad" />
+                             </View>
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                     {/* Section 3: Address */}
+                     <View style={styles.formSection}>
+                        <Text style={styles.sectionTitle}>Physical Address</Text>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Street Address</Text>
+                            <TextInput style={styles.input} placeholder="123 Street Name" />
+                        </View>
+                        <View style={styles.inputRow}>
+                             <View style={styles.inputGroup}>
+                                <Text style={styles.label}>City</Text>
+                                <TextInput style={styles.input} placeholder="City" />
+                             </View>
+                             <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Post Code</Text>
+                                <TextInput style={styles.input} placeholder="0000" keyboardType="numeric" />
+                             </View>
+                        </View>
+                    </View>
+                    
+                    <View style={styles.statusBadgeRow}>
+                        <Ionicons name="checkmark-circle" size={16} color={palette.success} />
+                        <Text style={styles.statusText}>All essential data provided</Text>
+                    </View>
+                </View>
+            )}
+        </View>
+    );
+}
 
 export default function Step2UpdateDetails() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isSmall = width < 480;
-  const isMedium = width < 768;
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
+  
+  // Track which student accordion is open (default to first)
+  const [openStudentId, setOpenStudentId] = useState<string | null>('1');
 
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleLogout = () => {
-    router.push('/(tabs)' as never);
-  };
-
-  const [formData, setFormData] = useState({
-    firstName: 'Mikhenso',
-    lastName: 'Rikhotso',
-    currentGrade: 'Grade 11',
-    nextGrade: '12',
-    phone: '0647939043',
-    email: 'mikhenso@gmail.com',
-    street: 'Joni',
-    city: 'Giyani',
-    state: 'Free State',
-    postcode: '2025',
-    accountHolderName: 'Ronald Rikhotso',
-    bankName: 'African Bank',
-    accountType: 'Savings',
-    accountNumber: '1668677022',
-    branchCode: '302520',
-  });
-
-  const updateField = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const validateForm = () => {
-    const required = [
-      'firstName',
-      'lastName',
-      'currentGrade',
-      'nextGrade',
-      'phone',
-      'email',
-      'street',
-      'city',
-      'state',
-      'postcode',
-      'accountHolderName',
-      'bankName',
-      'accountType',
-      'accountNumber',
-      'branchCode',
-    ];
-    return required.every((field) => formData[field as keyof typeof formData]?.trim() !== '');
+    router.replace('/(tabs)' as never);
   };
 
   const handleContinue = () => {
-    if (!validateForm()) {
-      alert('Please fill in all required fields');
-      return;
-    }
+    // Logic to validate
     setShowSuccessModal(true);
   };
 
-  const handleModalContinue = () => {
-    setShowSuccessModal(false);
-    router.push('/re-registration/step4-financing' as never);
-  };
-
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
+      
+      {/* Top Nav */}
+      <View style={styles.topNav}>
+        <Pressable 
+            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
+            onPress={() => setMenuOpen(true)}
+        >
+          <Ionicons name="menu" size={24} color={palette.text} />
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && (
-        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />
-      )}
-      <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={styles.menuHeader}>
-          <Text style={styles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
-        
-        <View style={styles.menuDivider} />
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/re-registration' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📝</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Re-registration</Text>
-            <Text style={styles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/fee-forecasting' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📊</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Fee Forecasting</Text>
-            <Text style={styles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/ai-assistant' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>🤖</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>AI Assistant</Text>
-            <Text style={styles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/request-statement' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📋</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Request Statement</Text>
-            <Text style={styles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerIcon}>
-            <Text style={styles.headerIconText}>✏️</Text>
-          </View>
-          <View>
-            <Text style={styles.mainTitle}>Update Student Details</Text>
-            <Text style={styles.yearText}>2025 Academic Year</Text>
-          </View>
-        </View>
-
-        {/* Info Banner */}
-        <View style={styles.infoBanner}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
-          <Text style={styles.infoText}>
-            Please review and update all student information. This data will be used for the
-            re-registration process.
-          </Text>
-        </View>
-
-        <View style={[styles.contentRow, isMedium && styles.contentColumn]}>
-          {/* Sidebar */}
-          {isMedium ? (
-            <ProgressTracker steps={steps} currentStep={2} completion={50} compact={true} />
-          ) : (
-            <View style={styles.sidebar}>
-              <ProgressTracker steps={steps} currentStep={2} completion={50} />
-            </View>
-          )}
-
-          {/* Main Content */}
-          <View style={[styles.mainContent, isMedium && styles.mainContentMobile]}>
-            {/* Student Profile Card */}
-            <View style={styles.studentProfileCard}>
-              <View style={styles.studentProfileHeader}>
-                <View style={styles.studentAvatar}>
-                  <Text style={styles.studentAvatarText}>MR</Text>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{flex: 1}}>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            
+            {/* Header */}
+            <View style={styles.headerContainer}>
+                <View style={styles.headerIconBox}>
+                    <Ionicons name="create-outline" size={24} color={palette.primary} />
                 </View>
-                <View style={styles.studentInfo}>
-                  <Text style={styles.studentName}>Mikhenso Rikhotso</Text>
-                  <Text style={styles.studentMeta}>Student ID: 2020155260088</Text>
-                  <Text style={styles.studentMeta}>Current Grade: Grade 11</Text>
+                <View>
+                    <Text style={styles.headerTitle}>Update Details</Text>
+                    <Text style={styles.headerSubtitle}>Verify student information</Text>
                 </View>
-                <View style={styles.activeBadge}>
-                  <Text style={styles.activeBadgeText}>Active Student</Text>
-                </View>
-              </View>
             </View>
 
-            {/* Form Sections */}
-            {/* 1. Personal Information */}
-            <View style={styles.formSection}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionNumber}>
-                  <Text style={styles.sectionNumberText}>1</Text>
-                </View>
-                <Text style={styles.sectionTitle}>Personal Information</Text>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>First Name *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.firstName}
-                    onChangeText={(v) => updateField('firstName', v)}
-                    placeholder="Enter first name"
-                  />
-                </View>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Last Name *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.lastName}
-                    onChangeText={(v) => updateField('lastName', v)}
-                    placeholder="Enter last name"
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* 2. Academic Information */}
-            <View style={styles.formSection}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionNumber}>
-                  <Text style={styles.sectionNumberText}>2</Text>
-                </View>
-                <Text style={styles.sectionTitle}>Academic Information</Text>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Current Grade *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.currentGrade}
-                    onChangeText={(v) => updateField('currentGrade', v)}
-                    placeholder="Enter current grade"
-                  />
-                </View>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Next Grade *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.nextGrade}
-                    onChangeText={(v) => updateField('nextGrade', v)}
-                    placeholder="Enter next grade"
-                  />
-                </View>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Phone Number *</Text>
-                  <View style={styles.inputWithIcon}>
-                    <TextInput
-                      style={styles.inputFlex}
-                      value={formData.phone}
-                      onChangeText={(v) => updateField('phone', v)}
-                      placeholder="Enter phone number"
-                      keyboardType="phone-pad"
-                    />
-                    <Text style={styles.checkIcon}>✓</Text>
-                  </View>
-                </View>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Email *</Text>
-                  <View style={styles.inputWithIcon}>
-                    <TextInput
-                      style={styles.inputFlex}
-                      value={formData.email}
-                      onChangeText={(v) => updateField('email', v)}
-                      placeholder="Enter email"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-                    <Text style={styles.checkIcon}>✓</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* 3. Address Information */}
-            <View style={styles.formSection}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionNumber}>
-                  <Text style={styles.sectionIcon}>📍</Text>
-                </View>
-                <Text style={styles.sectionTitle}>Address Information</Text>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Street Address *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.street}
-                    onChangeText={(v) => updateField('street', v)}
-                    placeholder="Enter street address"
-                  />
-                </View>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>City *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.city}
-                    onChangeText={(v) => updateField('city', v)}
-                    placeholder="Enter city"
-                  />
-                </View>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>State *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.state}
-                    onChangeText={(v) => updateField('state', v)}
-                    placeholder="Enter state"
-                  />
-                </View>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Postcode *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.postcode}
-                    onChangeText={(v) => updateField('postcode', v)}
-                    placeholder="Enter postcode"
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* 4. Bank Account Details */}
-            <View style={styles.bankSection}>
-              <View style={styles.bankHeader}>
-                <Text style={styles.bankIcon}>🏦</Text>
-                <View style={styles.bankHeaderText}>
-                  <Text style={styles.bankTitle}>Bank Account Details</Text>
-                  <Text style={styles.bankSubtitle}>
-                    Required for Netcash debit order mandate creation
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.bankInfoBox}>
-                <Text style={styles.bankInfoIcon}>ℹ️</Text>
-                <Text style={styles.bankInfoText}>
-                  Your bank account details will be securely stored and used only for creating a
-                  debit order mandate for your school fees.
+            {/* Info Banner */}
+            <View style={styles.infoBanner}>
+                <Ionicons name="information-circle" size={20} color={palette.primary} />
+                <Text style={styles.infoText}>
+                    Please review and update detailed information for each student below. Accurate data ensures smooth registration.
                 </Text>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Account Holder Name *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.accountHolderName}
-                    onChangeText={(v) => updateField('accountHolderName', v)}
-                    placeholder="Enter account holder name"
-                  />
-                </View>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Bank Name *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.bankName}
-                    onChangeText={(v) => updateField('bankName', v)}
-                    placeholder="Select bank"
-                  />
-                </View>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Account Type *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.accountType}
-                    onChangeText={(v) => updateField('accountType', v)}
-                    placeholder="Select account type"
-                  />
-                </View>
-              </View>
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Account Number * (8-17 digits)</Text>
-                  <View style={styles.inputWithIcon}>
-                    <TextInput
-                      style={styles.inputFlex}
-                      value={formData.accountNumber}
-                      onChangeText={(v) => updateField('accountNumber', v)}
-                      placeholder="Enter account number"
-                      keyboardType="numeric"
-                    />
-                    <Text style={styles.checkIcon}>✓</Text>
-                  </View>
-                </View>
-                <View style={styles.formField}>
-                  <Text style={styles.label}>Branch Code * (6 digits)</Text>
-                  <View style={styles.inputWithIcon}>
-                    <TextInput
-                      style={styles.inputFlex}
-                      value={formData.branchCode}
-                      onChangeText={(v) => updateField('branchCode', v)}
-                      placeholder="Enter branch code"
-                      keyboardType="numeric"
-                      maxLength={6}
-                    />
-                    <Text style={styles.branchCodeCount}>
-                      {formData.branchCode.length}/6
-                    </Text>
-                  </View>
-                </View>
-              </View>
             </View>
 
-            {/* Navigation */}
-            <View style={styles.navButtons}>
-              <Pressable style={styles.backBtnNav} onPress={() => router.back()}>
-                <Text style={styles.backBtnText}>Back</Text>
-              </Pressable>
-              <Pressable style={styles.continueBtn} onPress={handleContinue}>
-                <Text style={styles.continueBtnText}>Continue →</Text>
-              </Pressable>
+            {/* Steps Indicator */}
+             <View style={styles.stepsCard}>
+                <Text style={styles.sectionHeaderTitle}>Registration Steps</Text>
+                <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false} 
+                    contentContainerStyle={styles.stepsScrollContent}
+                >
+                    {/* Step 1 (Completed) */}
+                    <View style={styles.stepItemCompleted}>
+                        <Ionicons name="checkmark-circle" size={20} color={palette.success} />
+                        <Text style={styles.stepTextCompleted}>Select Children</Text>
+                    </View>
+                    <View style={styles.stepDivider} />
+                    {/* Step 2 (Active) */}
+                    <View style={styles.stepItemActive}>
+                        <View style={styles.stepCircleActive}>
+                             <Text style={styles.stepNumberActive}>2</Text>
+                        </View>
+                        <Text style={styles.stepTextActive}>Update Details</Text>
+                    </View>
+                    <View style={styles.stepDivider} />
+                    {/* Step 3 */}
+                    <View style={styles.stepItemInactive}>
+                        <Text style={styles.stepNumberInactive}>3</Text>
+                        <Text style={styles.stepTextInactive}>Review & Submit</Text>
+                    </View>
+                </ScrollView>
             </View>
-          </View>
-        </View>
-      </ScrollView>
 
-      <SuccessModal
-        visible={showSuccessModal}
-        title="Student details updated successfully"
-        count={1}
-        onContinue={handleModalContinue}
-      />
+            {/* Student Dropdowns */}
+            <Text style={styles.sectionLabel}>Students ({mockStudents.length})</Text>
+            
+            <View style={styles.accordionsContainer}>
+                {mockStudents.map((student) => (
+                    <StudentFormAccordion 
+                        key={student.id}
+                        student={student}
+                        isOpen={openStudentId === student.id}
+                        onToggle={() => setOpenStudentId(openStudentId === student.id ? null : student.id)}
+                    />
+                ))}
+            </View>
+
+            {/* Bank Details Section (Shared for all students) */}
+            <View style={styles.stepsCard}>
+                <View style={[styles.headerContainer, { marginBottom: 20, marginTop: 0 }]}>
+                    <View style={[styles.headerIconBox, { backgroundColor: palette.primaryLight }]}>
+                         <Ionicons name="card-outline" size={24} color={palette.primary} />
+                    </View>
+                    <View>
+                        <Text style={[styles.headerTitle, { fontSize: 17 }]}>Bank Account Details</Text>
+                        <Text style={styles.headerSubtitle}>For debit order instructions</Text>
+                    </View>
+                </View>
+
+                <View>
+                    <View style={styles.inputRow}>
+                            <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Bank Name</Text>
+                            <TextInput style={styles.input} placeholder="e.g. FNB, Capitec" />
+                            </View>
+                            <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Account Type</Text>
+                            <TextInput style={styles.input} placeholder="Savings/Current" />
+                            </View>
+                    </View>
+                    <View style={styles.inputRow}>
+                            <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Account Number</Text>
+                            <TextInput style={styles.input} placeholder="Account Number" keyboardType="numeric" />
+                            </View>
+                            <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Branch Code</Text>
+                            <TextInput style={styles.input} placeholder="Branch Code" keyboardType="numeric" />
+                            </View>
+                    </View>
+                </View>
+                
+                <View style={[styles.statusBadgeRow, { marginTop: 4, backgroundColor: palette.primaryLight }]}>
+                    <Ionicons name="lock-closed" size={14} color={palette.primary} />
+                    <Text style={[styles.statusText, { color: palette.primary }]}>Details are securely encrypted</Text>
+                </View>
+            </View>
+
+            {/* Footer Buttons */}
+            <View style={styles.footerRow}>
+                <Pressable 
+                    style={({pressed}) => [styles.cancelBtn, pressed && styles.pressedBtn]}
+                    onPress={() => router.back()}
+                >
+                    <Text style={styles.cancelBtnText}>Back</Text>
+                </Pressable>
+                
+                <Pressable
+                    style={({pressed}) => [styles.continueBtn, pressed && styles.pressedBtn]}
+                    onPress={handleContinue}
+                >
+                    <Text style={styles.continueBtnText}>Save & Continue →</Text>
+                </Pressable>
+            </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <SuccessModal
+          visible={showSuccessModal}
+          title="Student details updated"
+          count={mockStudents.length}
+          onContinue={() => {
+              setShowSuccessModal(false);
+              router.push('/re-registration/step4-financing' as never); 
+          }}
+        />
+      )}
+
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: palette.background },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
+  safeArea: {
+    flex: 1,
+    backgroundColor: palette.background,
   },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+  topNav: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
   },
-  hamburgerIcon: { fontSize: 24, color: palette.text },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  logoBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  menuBtn: {
+      padding: 8,
+      alignSelf: 'flex-start',
+      borderRadius: 8,
+      backgroundColor: '#fff',
+      borderWidth: 1,
+      borderColor: palette.border,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
   },
-  logoLetter: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  brandTitle: { color: palette.text, fontSize: 15, fontWeight: '700' },
-  brandSubtitle: { color: palette.muted, fontSize: 11 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    justifyContent: 'center',
+  pressedBtn: {
+      opacity: 0.8,
   },
-  logoutIcon: { fontSize: 18, color: '#dc2626' },
-  logoutText: { color: '#dc2626', fontWeight: '600', fontSize: 12 },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 999,
+  scrollContent: {
+      padding: 16,
+      paddingBottom: 40,
   },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1000,
-    borderRightWidth: 1,
-    borderRightColor: palette.border,
+
+  // Header
+  headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 20,
+      marginTop: 8,
   },
-  menuHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+  headerIconBox: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: palette.primaryLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
   },
-  menuTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  closeIcon: { fontSize: 20, color: palette.text },
-  menuDivider: { height: 1, backgroundColor: palette.border },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
+  headerTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: palette.text,
   },
-  dropdownIcon: { fontSize: 20 },
-  itemContent: { flex: 1 },
-  dropdownText: { fontSize: 14, fontWeight: '600', color: palette.text },
-  dropdownSubtext: { fontSize: 12, color: palette.muted, marginTop: 2 },
-  container: { padding: 16, paddingTop: 24, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
+  headerSubtitle: {
+      fontSize: 14,
+      color: palette.textSecondary,
   },
-  headerIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerIconText: { fontSize: 24 },
-  mainTitle: { fontSize: 22, fontWeight: '800', color: palette.text },
-  yearText: { fontSize: 13, color: palette.muted, marginTop: 2 },
+
+  // Info Banner
   infoBanner: {
-    flexDirection: 'row',
-    backgroundColor: '#e0f2fe',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 20,
-    gap: 10,
+      flexDirection: 'row',
+      backgroundColor: '#EFF6FF', // Blue-50
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 24,
+      gap: 12,
+      borderWidth: 1,
+      borderColor: '#DBEAFE', // Blue-100
   },
-  infoIcon: { fontSize: 20 },
-  infoText: { flex: 1, fontSize: 13, color: palette.text, lineHeight: 18 },
-  contentRow: { flexDirection: 'row', gap: 16 },
-  contentColumn: { flexDirection: 'column' },
-  sidebar: { width: 200, flexShrink: 0 },
-  mainContent: { flex: 1, minWidth: 0 },
-  mainContentMobile: { width: '100%' },
-  studentProfileCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: palette.border,
+  infoText: {
+      flex: 1,
+      fontSize: 13,
+      color: '#3B82F6', // Blue-500
+      lineHeight: 20,
   },
-  studentProfileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+
+  // Steps
+  stepsCard: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 32,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
   },
-  studentAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  sectionHeaderTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: palette.textSecondary,
+      marginBottom: 16,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
   },
-  studentAvatarText: { color: '#fff', fontSize: 20, fontWeight: '700' },
-  studentInfo: { flex: 1 },
-  studentName: { fontSize: 18, fontWeight: '700', color: palette.text, marginBottom: 4 },
-  studentMeta: { fontSize: 12, color: palette.muted, marginBottom: 2 },
-  activeBadge: {
-    backgroundColor: palette.success,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+  stepsScrollContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
   },
-  activeBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  stepItemCompleted: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      opacity: 0.6,
+  },
+  stepTextCompleted: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: palette.text,
+      textDecorationLine: 'line-through',
+  },
+  stepItemActive: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: palette.primaryLight,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: 20,
+      gap: 8,
+  },
+  stepCircleActive: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: palette.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  stepNumberActive: {
+      color: '#fff',
+      fontSize: 11,
+      fontWeight: '700',
+  },
+  stepTextActive: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: palette.primary,
+  },
+  stepItemInactive: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      opacity: 0.5,
+  },
+  stepNumberInactive: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: palette.border,
+      textAlign: 'center',
+      textAlignVertical: 'center',
+      fontSize: 11,
+      fontWeight: '600',
+      color: palette.textSecondary,
+      overflow: 'hidden',
+  },
+  stepTextInactive: {
+      fontSize: 13,
+      color: palette.textSecondary,
+  },
+  stepDivider: {
+      height: 1,
+      width: 24,
+      backgroundColor: palette.border,
+      marginHorizontal: 8,
+  },
+
+  // Accordions
+  sectionLabel: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: palette.text,
+      marginBottom: 12,
+  },
+  accordionsContainer: {
+      gap: 16,
+      marginBottom: 40,
+  },
+  accordionCard: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: palette.border,
+      overflow: 'hidden',
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.03,
+      shadowRadius: 4,
+  },
+  accordionCardOpen: {
+      borderColor: palette.primary,
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+  },
+  accordionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: 16,
+      backgroundColor: '#fff',
+  },
+  accordionHeaderOpen: {
+      backgroundColor: '#F8FAFC',
+      borderBottomWidth: 1,
+      borderBottomColor: palette.border,
+  },
+  accordionHeaderLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+  },
+  avatarCircle: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: '#E2E8F0',
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  avatarText: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: palette.textSecondary,
+  },
+  studentName: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: palette.text,
+  },
+  studentId: {
+      fontSize: 12,
+      color: palette.textSecondary,
+      marginTop: 2,
+  },
+  accordionContent: {
+      padding: 20,
+      backgroundColor: '#fff',
+  },
+  
+  // Form Styles
   formSection: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: palette.border,
+      marginBottom: 8,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
+  sectionTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: palette.primary,
+      marginBottom: 16,
   },
-  sectionNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  inputRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 16,
   },
-  sectionNumberText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  sectionIcon: { fontSize: 18 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  formRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
+  inputGroup: {
+      flex: 1,
+      marginBottom: 16,
   },
-  formField: { flex: 1 },
   label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: palette.text,
-    marginBottom: 6,
+      fontSize: 13,
+      fontWeight: '500',
+      color: palette.textSecondary,
+      marginBottom: 6,
   },
   input: {
-    backgroundColor: '#f3f4f6',
-    borderWidth: 1,
-    borderColor: palette.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: palette.text,
+      height: 44,
+      backgroundColor: palette.inputBg,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: palette.border,
+      paddingHorizontal: 12,
+      fontSize: 14,
+      color: palette.text,
   },
-  inputWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f3f4f6',
-    borderWidth: 1,
-    borderColor: palette.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+  divider: {
+      height: 1,
+      backgroundColor: palette.border,
+      marginVertical: 16,
   },
-  inputFlex: { flex: 1, paddingVertical: 10, fontSize: 14, color: palette.text },
-  checkIcon: { color: palette.success, fontSize: 18, fontWeight: '700' },
-  branchCodeCount: { color: palette.muted, fontSize: 12, marginLeft: 8 },
-  bankSection: {
-    backgroundColor: '#d1f0f7',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 2,
-    borderColor: '#2596be',
+  statusBadgeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: '#F0FDF4', // Green-50
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 8,
   },
-  bankHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
+  statusText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: palette.success,
   },
-  bankIcon: { fontSize: 28 },
-  bankHeaderText: { flex: 1 },
-  bankTitle: { fontSize: 16, fontWeight: '700', color: '#000000', marginBottom: 2 },
-  bankSubtitle: { fontSize: 12, color: '#000000', opacity: 0.85 },
-  bankInfoBox: {
-    flexDirection: 'row',
-    backgroundColor: '#bfdbfe',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 10,
-  },
-  bankInfoIcon: { fontSize: 20 },
-  bankInfoText: { flex: 1, fontSize: 12, color: palette.text, lineHeight: 16 },
-  navButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: palette.border,
-  },
-  backBtnNav: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
-  backBtnText: { color: palette.text, fontWeight: '600' },
-  continueBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-  },
-  continueBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-});
 
+  // Footer
+  footerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12,
+      marginTop: 20,
+  },
+  cancelBtn: {
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 26,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: '#fff',
+  },
+  cancelBtnText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: palette.textSecondary,
+  },
+  continueBtn: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 26,
+      backgroundColor: palette.primary,
+      alignItems: 'center',
+      shadowColor: palette.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 4,
+  },
+  continueBtnText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#fff',
+  },
+});

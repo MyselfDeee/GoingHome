@@ -5,43 +5,33 @@ import {
   Text,
   View,
   Pressable,
-  SafeAreaView,
   useWindowDimensions,
   Animated,
+  Platform,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import ProgressTracker from '@/components/re-registration/ProgressTracker';
-import StudentCard from '@/components/re-registration/StudentCard';
+import { Ionicons } from '@expo/vector-icons';
+import SideMenu from '../../components/SideMenu';
 
+// Updated palette to match reference image (soft blues, clean whites, subtle shadows)
 const palette = {
-  background: '#f8fafc',
-  card: '#ffffff',
-  cardLight: '#f1f5f9',
-  border: '#e2e8f0',
-  primary: '#0ea5e9',
-  primaryLight: '#cffafe',
-  primaryDark: '#0369a1',
-  secondary: '#8b5cf6',
-  secondaryLight: '#ede9fe',
-  success: '#10b981',
-  successLight: '#d1fae5',
-  danger: '#ef4444',
-  dangerLight: '#fee2e2',
-  warning: '#f59e0b',
-  warningLight: '#fef3c7',
-  muted: '#64748b',
-  text: '#0f172a',
-  textSecondary: '#475569',
-  textMuted: '#94a3b8',
-  accent: '#06b6d4',
+  background: '#F9FAFC', // Very light cool gray
+  card: '#FFFFFF',
+  text: '#1E293B', // Slate-800
+  textSecondary: '#64748B', // Slate-500
+  textMuted: '#94A3B8', // Slate-400
+  primary: '#6366F1', // Indigo-500
+  primaryLight: '#EEF2FF', // Indigo-50
+  border: '#E2E8F0', // Slate-200
+  success: '#10B981', // Emerald-500
+  warningBg: '#FFFBEB', // Amber-50
+  warningText: '#B45309', // Amber-700
+  shadow: '#0F172A',
 };
 
-const steps = [
-  { number: 1, title: 'Select Children', subtitle: 'Choose students to re-register' },
-  { number: 2, title: 'Update Details', subtitle: 'Review and update information' },
-  { number: 3, title: 'Review & Submit', subtitle: 'Confirm and submit' },
-];
-
+// Mock data
 const mockStudents = [
   {
     id: '1',
@@ -55,24 +45,8 @@ const mockStudents = [
 
 export default function Step1SelectChildren() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isSmall = width < 480;
-  const isMedium = width < 768;
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
-
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
-
-  const handleLogout = () => {
-    router.push('/(tabs)' as never);
-  };
 
   const toggleStudent = (id: string) => {
     setSelectedStudents((prev) =>
@@ -82,467 +56,535 @@ export default function Step1SelectChildren() {
 
   const handleContinue = () => {
     if (selectedStudents.length === 0) {
-      alert('Please select at least one child to continue');
+      // In a real app we might show a toast, simply return for now or alert
       return;
     }
     router.push('/re-registration/step2-update' as never);
   };
 
+  const handleLogout = () => {
+      router.replace('/(tabs)' as never);
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
+
+      {/* Top Nav */}
+      <View style={styles.topNav}>
+        <Pressable 
+            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
+            onPress={() => setMenuOpen(true)}
+        >
+          <Ionicons name="menu" size={24} color={palette.text} />
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && (
-        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />
-      )}
-      <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={styles.menuHeader}>
-          <Text style={styles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
-        
-        <View style={styles.menuDivider} />
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/re-registration' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📝</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Re-registration</Text>
-            <Text style={styles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/fee-forecasting' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📊</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Fee Forecasting</Text>
-            <Text style={styles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/ai-assistant' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>🤖</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>AI Assistant</Text>
-            <Text style={styles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/request-statement' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📋</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Request Statement</Text>
-            <Text style={styles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Main Title */}
-        <View style={styles.titleSection}>
-          <Text style={styles.titleIcon}>🎓</Text>
-          <Text style={styles.mainTitle}>Student Re-Registration</Text>
-          <Text style={styles.yearText}>2025 Academic Year</Text>
-        </View>
-
-        {/* Deadline Banner */}
-        <View style={[styles.deadlineBanner, isSmall && styles.deadlineBannerSmall]}>
-          <Text style={styles.deadlineIcon}>📅</Text>
-          <View style={styles.deadlineContent}>
-            <Text style={styles.deadlineTitle}>Registration Deadline</Text>
-            <Text style={styles.deadlineDate}>March 31, 2025 - Ensure timely submission</Text>
-          </View>
-          {!isSmall && (
-            <Pressable style={styles.importantBtn}>
-              <Text style={styles.importantBtnText}>Important</Text>
-            </Pressable>
-          )}
-        </View>
-
-        <View style={[styles.contentRow, isMedium && styles.contentColumn]}>
-          {/* Left Sidebar - Progress */}
-          {isMedium ? (
-            <ProgressTracker steps={steps} currentStep={1} completion={33} compact={true} />
-          ) : (
-            <View style={styles.sidebar}>
-              <ProgressTracker steps={steps} currentStep={1} completion={33} />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Header Section */}
+        <View style={styles.headerContainer}>
+            <View style={styles.headerIconBox}>
+                <Ionicons name="school-outline" size={24} color={palette.primary} />
             </View>
-          )}
+            <View>
+                <Text style={styles.headerTitle}>Student Re-Registration</Text>
+                <Text style={styles.headerSubtitle}>2025 Academic Year</Text>
+            </View>
+        </View>
 
-          {/* Main Content */}
-          <View style={[styles.mainContent, isMedium && styles.mainContentMobile]}>
-            {/* Info Card */}
-            <View style={[styles.infoCard, isSmall && styles.infoCardSmall]}>
-              <Text style={styles.infoIcon}>👥</Text>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoTitle}>Select Children for Re-Registration</Text>
-                <Text style={styles.infoSubtitle}>
-                  Choose which children you'd like to re-register for the upcoming academic year.
-                  You can select multiple students at once.
+        {/* Important Notice Card */}
+        <View style={styles.noticeCard}>
+            <View style={styles.noticeHeader}>
+                <Ionicons name="calendar-outline" size={18} color={palette.primary} />
+                <Text style={styles.noticeHeaderText}>Important</Text>
+            </View>
+            <View style={styles.noticeDivider} />
+            <View style={styles.noticeContent}>
+                <View style={styles.noticeIconBox}>
+                    <Ionicons name="alert-circle" size={20} color={palette.warningText} />
+                </View>
+                <View style={{flex: 1}}>
+                    <Text style={styles.noticeTitle}>Registration Deadline</Text>
+                    <Text style={styles.noticeDesc}>March 31, 2025 – Ensure timely submission</Text>
+                </View>
+            </View>
+        </View>
+
+        {/* Progress Steps Card */}
+        <View style={styles.stepsCard}>
+            <Text style={styles.sectionHeaderTitle}>Registration Steps</Text>
+            <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.stepsScrollContent}
+            >
+                {/* Step 1 (Active) */}
+                <View style={styles.stepItemActive}>
+                    <Ionicons name="checkbox" size={20} color={palette.primary} />
+                    <Text style={styles.stepTextActive}>Select Children</Text>
+                </View>
+                {/* Divider */}
+                <View style={styles.stepDivider} />
+                {/* Step 2 */}
+                <View style={styles.stepItemInactive}>
+                    <Text style={styles.stepNumberInactive}>2</Text>
+                    <Text style={styles.stepTextInactive}>Update Details</Text>
+                </View>
+                {/* Divider */}
+                <View style={styles.stepDivider} />
+                {/* Step 3 */}
+                <View style={styles.stepItemInactive}>
+                    <Text style={styles.stepNumberInactive}>3</Text>
+                    <Text style={styles.stepTextInactive}>Review & Submit</Text>
+                </View>
+            </ScrollView>
+            {/* Progress Bar Visual */}
+            <View style={styles.progressBarBg}>
+                <View style={styles.progressBarFill} />
+            </View>
+        </View>
+
+        {/* Selection Section */}
+        <View style={styles.selectionCard}>
+            <View style={styles.selectionHeader}>
+                <View style={styles.selectionIconRow}>
+                    <Ionicons name="people" size={22} color={palette.primary} />
+                    <Text style={styles.sectionHeaderTitle}>Select Children for Re-Registration</Text>
+                </View>
+                <Text style={styles.selectionDesc}>
+                    Choose which children you'd like to re-register for the upcoming academic year. You can select multiple students at once.
                 </Text>
-              </View>
+            </View>
+            
+            <View style={styles.divider} />
+
+            <View style={styles.childrenListHeader}>
+                <Text style={styles.childrenListTitle}>Your Children</Text>
+                <Text style={styles.childrenListCount}>{mockStudents.length} student available for re-registration</Text>
             </View>
 
-            {/* Your Children Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Your Children</Text>
-              <Text style={styles.sectionSubtitle}>
-                {mockStudents.length} student available for re-registration
-              </Text>
+            {/* Student Cards */}
+            {mockStudents.map((student) => {
+                const isSelected = selectedStudents.includes(student.id);
+                return (
+                    <Pressable 
+                        key={student.id} 
+                        style={[styles.studentCard, isSelected && styles.studentCardSelected]}
+                        onPress={() => toggleStudent(student.id)}
+                    >
+                        <View style={styles.checkboxContainer}>
+                            <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                                {isSelected && <Ionicons name="checkmark" size={14} color="#fff" />}
+                            </View>
+                        </View>
+                        
+                        <View style={styles.avatarContainer}>
+                            <Text style={styles.avatarText}>{student.initials}</Text>
+                        </View>
 
-              {mockStudents.map((student) => (
-                <StudentCard
-                  key={student.id}
-                  initials={student.initials}
-                  name={student.name}
-                  grade={student.grade}
-                  studentId={student.studentId}
-                  date={student.date}
-                  selected={selectedStudents.includes(student.id)}
-                  onSelect={() => toggleStudent(student.id)}
-                />
-              ))}
+                        <View style={styles.studentInfo}>
+                            <View style={styles.studentHeaderRow}>
+                                <Text style={styles.studentName}>{student.name}</Text>
+                                <Ionicons name="create-outline" size={18} color={palette.textMuted} />
+                            </View>
+                            <Text style={styles.studentGrade}>{student.grade}</Text>
+                            
+                            <View style={styles.studentMetaRow}>
+                                <Text style={styles.metaText}>ID: {student.studentId}</Text>
+                                <View style={styles.dateMeta}>
+                                    <Ionicons name="calendar-outline" size={14} color={palette.textMuted} />
+                                    <Text style={styles.metaText}>{student.date}</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </Pressable>
+                );
+            })}
+
+            {/* Footer Buttons */}
+            <View style={styles.footerRow}>
+                <Pressable 
+                    style={({pressed}) => [styles.cancelBtn, pressed && styles.pressedBtn]}
+                    onPress={() => router.back()}
+                >
+                    <Text style={styles.cancelBtnText}>Cancel</Text>
+                </Pressable>
+                
+                <Pressable
+                    style={({pressed}) => [
+                        styles.continueBtn, 
+                        selectedStudents.length === 0 && styles.continueBtnDisabled,
+                        pressed && styles.pressedBtn
+                    ]}
+                    onPress={handleContinue}
+                    disabled={selectedStudents.length === 0}
+                >
+                    <Text style={styles.continueBtnText}>Continue →</Text>
+                </Pressable>
             </View>
-
-            {/* Confirmation Banner */}
-            {selectedStudents.length > 0 && (
-              <View style={[styles.confirmationBanner, isSmall && styles.confirmationBannerSmall]}>
-                <View style={styles.confirmationCircle}>
-                  <Text style={styles.confirmationNumber}>{selectedStudents.length}</Text>
-                </View>
-                <View style={styles.confirmationContent}>
-                  <Text style={styles.confirmationTitle}>
-                    {selectedStudents.length} child selected for re-registration
-                  </Text>
-                  <Text style={styles.confirmationSubtitle}>Ready to proceed to the next step</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Bottom Navigation */}
-            <View style={[styles.navButtons, isSmall && styles.navButtonsSmall]}>
-              <Pressable style={[styles.cancelBtn, isSmall && styles.cancelBtnSmall]} onPress={() => router.back()}>
-                <Text style={styles.cancelBtnText}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.continueBtn,
-                  selectedStudents.length === 0 && styles.continueBtnDisabled,
-                  isSmall && styles.continueBtnSmall,
-                ]}
-                onPress={handleContinue}>
-                <Text style={styles.continueBtnText}>Continue →</Text>
-              </Pressable>
-            </View>
-          </View>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: palette.background },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 40,
-    backgroundColor: palette.card,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+  safeArea: {
+    flex: 1,
+    backgroundColor: palette.background,
   },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+  topNav: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
   },
-  hamburgerIcon: { fontSize: 24, color: palette.text },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  logoBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: palette.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+  menuBtn: {
+      padding: 8,
+      alignSelf: 'flex-start',
+      borderRadius: 8,
+      backgroundColor: '#fff',
+      borderWidth: 1,
+      borderColor: palette.border,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
   },
-  logoLetter: { color: '#fff', fontWeight: '800', fontSize: 18 },
-  brandTitle: { color: palette.text, fontSize: 16, fontWeight: '800' },
-  brandSubtitle: { color: palette.textSecondary, fontSize: 11 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fecaca',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 8,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: palette.danger,
+  pressedBtn: {
+      opacity: 0.8,
   },
-  logoutIcon: { fontSize: 18, color: palette.danger },
-  logoutText: { color: palette.danger, fontWeight: '700', fontSize: 12 },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    zIndex: 999,
+  scrollContent: {
+      padding: 16,
+      paddingBottom: 40,
   },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: palette.card,
-    zIndex: 1000,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    shadowOffset: { width: 2, height: 0 },
-    paddingTop: 12,
+  
+  // Header
+  headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 24,
+      marginTop: 8,
   },
-  menuHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+  headerIconBox: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: palette.primaryLight, // Icon similar to reference
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
   },
-  menuTitle: { fontSize: 18, fontWeight: '800', color: palette.text },
-  closeIcon: { fontSize: 22, color: palette.muted, fontWeight: '600' },
-  menuDivider: { height: 1, backgroundColor: palette.border },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginHorizontal: 8,
-    marginVertical: 4,
-    borderRadius: 10,
-    backgroundColor: palette.cardLight,
-    gap: 14,
+  headerTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: palette.text,
   },
-  dropdownIcon: { fontSize: 24 },
-  itemContent: { flex: 1 },
-  dropdownText: { fontSize: 15, fontWeight: '700', color: palette.text },
-  dropdownSubtext: { fontSize: 12, color: palette.textSecondary, marginTop: 3 },
-  container: { padding: 20, paddingTop: 24, paddingBottom: 40 },
-  titleSection: { marginBottom: 28 },
-  titleIcon: { fontSize: 48, marginBottom: 14 },
-  mainTitle: { fontSize: 32, fontWeight: '900', color: palette.text, marginBottom: 8 },
-  yearText: { fontSize: 15, color: palette.textSecondary, fontWeight: '600' },
-  deadlineBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: palette.primaryLight,
-    padding: 18,
-    borderRadius: 14,
-    marginBottom: 28,
-    gap: 14,
-    borderLeftWidth: 5,
-    borderLeftColor: palette.primary,
-    shadowColor: palette.primary,
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+  headerSubtitle: {
+      fontSize: 14,
+      color: palette.textSecondary,
   },
-  deadlineBannerSmall: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+
+  // Notice Card
+  noticeCard: {
+      backgroundColor: '#FFFBEB', // Light yellow/cream bg
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: '#FEF3C7',
+      padding: 16,
+      marginBottom: 20,
   },
-  deadlineIcon: { fontSize: 32, flexShrink: 0 },
-  deadlineContent: { flex: 1 },
-  deadlineTitle: { fontSize: 16, fontWeight: '800', color: palette.text, marginBottom: 4 },
-  deadlineDate: { fontSize: 14, color: palette.textSecondary, fontWeight: '500' },
-  importantBtn: {
-    backgroundColor: palette.danger,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    flexShrink: 0,
-    shadowColor: palette.danger,
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+  noticeHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 12,
   },
-  importantBtnText: { color: '#fff', fontSize: 12, fontWeight: '800' },
-  contentRow: { flexDirection: 'row', gap: 16 },
-  contentColumn: { flexDirection: 'column' },
-  sidebar: { width: 200, flexShrink: 0 },
-  mainContent: { flex: 1, minWidth: 0 },
-  mainContentMobile: { width: '100%' },
-  infoCard: {
-    flexDirection: 'row',
-    backgroundColor: palette.successLight,
-    padding: 18,
-    borderRadius: 14,
-    marginBottom: 28,
-    gap: 14,
-    borderLeftWidth: 5,
-    borderLeftColor: palette.success,
-    shadowColor: palette.success,
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+  noticeHeaderText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: palette.text,
   },
-  infoCardSmall: {
-    padding: 14,
-    gap: 12,
+  noticeDivider: {
+      height: 1,
+      backgroundColor: 'rgba(0,0,0,0.05)',
+      marginBottom: 12,
   },
-  infoIcon: { fontSize: 40, flexShrink: 0 },
-  infoContent: { flex: 1 },
-  infoTitle: { fontSize: 17, fontWeight: '800', color: palette.text, marginBottom: 6 },
-  infoSubtitle: { fontSize: 14, color: palette.textSecondary, lineHeight: 21, fontWeight: '500' },
-  section: { marginBottom: 28 },
-  sectionTitle: { fontSize: 22, fontWeight: '900', color: palette.text, marginBottom: 10 },
-  sectionSubtitle: { fontSize: 14, color: palette.textSecondary, marginBottom: 18, fontWeight: '500' },
-  confirmationBanner: {
-    flexDirection: 'row',
-    backgroundColor: palette.successLight,
-    padding: 18,
-    borderRadius: 14,
-    marginBottom: 28,
-    gap: 14,
-    borderLeftWidth: 5,
-    borderLeftColor: palette.success,
-    shadowColor: palette.success,
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+  noticeContent: {
+      flexDirection: 'row',
+      gap: 12,
   },
-  confirmationBannerSmall: {
-    padding: 14,
-    gap: 12,
+  noticeIconBox: {
+      width: 24,
+      height: 24,
+      backgroundColor: 'rgba(245, 158, 11, 0.2)', // Orangeish transparent
+      borderRadius: 6,
+      justifyContent: 'center',
+      alignItems: 'center',
   },
-  confirmationCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: palette.success,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexShrink: 0,
-    shadowColor: palette.success,
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+  noticeTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: palette.text,
+      marginBottom: 2,
   },
-  confirmationNumber: { color: '#fff', fontSize: 24, fontWeight: '900' },
-  confirmationContent: { flex: 1, justifyContent: 'center' },
-  confirmationTitle: { fontSize: 16, fontWeight: '800', color: palette.text, marginBottom: 4 },
-  confirmationSubtitle: { fontSize: 13, color: palette.textSecondary, fontWeight: '500' },
-  navButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 14,
-    marginTop: 32,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: palette.border,
+  noticeDesc: {
+      fontSize: 13,
+      color: palette.textSecondary,
   },
-  navButtonsSmall: {
-    justifyContent: 'space-between',
-    marginTop: 24,
-    paddingTop: 20,
+
+  // Steps Card
+  stepsCard: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 20,
+      // Soft shadow
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+  },
+  stepsScrollContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 16,
+      minWidth: '100%', 
+  },
+  stepItemActive: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: palette.primaryLight,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: 20,
+      gap: 6,
+      flexShrink: 0,
+  },
+  stepTextActive: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: palette.text,
+  },
+  stepDivider: {
+      height: 1,
+      width: 16,
+      backgroundColor: palette.border,
+      marginHorizontal: 4,
+  },
+  stepItemInactive: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      opacity: 0.5,
+      flexShrink: 0,
+  },
+  stepNumberInactive: {
+      fontSize: 13,
+      color: palette.textSecondary,
+      fontWeight: '600',
+      backgroundColor: palette.border,
+      width: 20,
+      height: 20,
+      textAlign: 'center',
+      textAlignVertical: 'center',
+      borderRadius: 10,
+      overflow: 'hidden',
+  },
+  stepTextInactive: {
+      fontSize: 13,
+      color: palette.textSecondary,
+  },
+  progressBarBg: {
+      height: 6,
+      backgroundColor: palette.primaryLight,
+      borderRadius: 3,
+      marginTop: 4,
+      width: '100%',
+      overflow: 'hidden',
+  },
+  progressBarFill: {
+      width: '33%',
+      height: '100%',
+      backgroundColor: palette.primary,
+      borderRadius: 3,
+  },
+
+  // Selection Card
+  selectionCard: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      padding: 20,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.05,
+      shadowRadius: 12,
+      elevation: 3,
+      marginBottom: 40,
+  },
+  selectionHeader: {
+      marginBottom: 16,
+  },
+  selectionIconRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 8,
+  },
+  sectionHeaderTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: palette.text,
+  },
+  selectionDesc: {
+      fontSize: 14,
+      color: palette.textSecondary,
+      lineHeight: 20,
+  },
+  divider: {
+      height: 1,
+      backgroundColor: palette.border,
+      marginVertical: 16,
+  },
+  childrenListHeader: {
+      marginBottom: 12,
+  },
+  childrenListTitle: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: palette.text,
+      marginBottom: 4,
+  },
+  childrenListCount: {
+      fontSize: 13,
+      color: palette.textSecondary,
+  },
+  
+  // Student Card
+  studentCard: {
+      flexDirection: 'row',
+      backgroundColor: '#F8FAGF', // Fallback, styles below override
+      borderWidth: 1,
+      borderColor: palette.border,
+      borderRadius: 12,
+      padding: 16,
+      alignItems: 'center',
+      marginBottom: 20,
+      backgroundColor: '#FAFAFA', // Default light background
+  },
+  studentCardSelected: {
+      backgroundColor: '#F7F9FF', // Very light blue tint
+      borderColor: palette.primary,
+  },
+  checkboxContainer: {
+      marginRight: 16,
+  },
+  checkbox: {
+      width: 22,
+      height: 22,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: '#CBD5E1',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+  },
+  checkboxSelected: {
+      backgroundColor: palette.primary,
+      borderColor: palette.primary,
+  },
+  avatarContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: '#818CF8', // Indigo-400
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+  },
+  avatarText: {
+      color: '#fff',
+      fontSize: 18,
+      fontWeight: '600',
+  },
+  studentInfo: {
+      flex: 1,
+  },
+  studentHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 4,
+  },
+  studentName: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: palette.text,
+  },
+  studentGrade: {
+      fontSize: 14,
+      color: palette.textSecondary,
+      marginBottom: 8,
+  },
+  studentMetaRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+  },
+  metaText: {
+      fontSize: 12,
+      color: palette.textMuted,
+  },
+  dateMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+  },
+
+  // Footer Buttons
+  footerRow: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      gap: 12,
+      paddingTop: 8,
   },
   cancelBtn: {
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: palette.cardLight,
-    borderWidth: 2,
-    borderColor: palette.border,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 26,
+      borderWidth: 1,
+      borderColor: palette.border,
+      backgroundColor: '#fff',
   },
-  cancelBtnSmall: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    flex: 1,
+  cancelBtnText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: palette.textSecondary,
   },
-  cancelBtnText: { color: palette.text, fontWeight: '800', fontSize: 15 },
   continueBtn: {
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: palette.primary,
-    shadowColor: palette.primary,
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
-  continueBtnSmall: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 24,
+      borderRadius: 26,
+      backgroundColor: palette.primary,
+      shadowColor: palette.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 4,
   },
   continueBtnDisabled: {
-    backgroundColor: palette.muted,
-    opacity: 0.5,
-    shadowOpacity: 0.1,
+      opacity: 0.5,
+      shadowOpacity: 0,
   },
-  continueBtnText: { color: '#fff', fontWeight: '900', fontSize: 16 },
+  continueBtnText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: '#fff',
+  },
 });
 

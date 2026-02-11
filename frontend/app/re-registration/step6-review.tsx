@@ -1,570 +1,350 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
   Text,
   View,
   Pressable,
-  SafeAreaView,
-  useWindowDimensions,
-  Animated,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import ProgressTracker from '@/components/re-registration/ProgressTracker';
+import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from '../../hooks/use-color-scheme';
+import SideMenu from '../../components/SideMenu';
 
-const palette = {
-  background: '#f0f4f8',
-  card: '#ffffff',
-  cardLight: '#f8fafc',
-  border: '#e2e8f0',
-  primary: '#2563eb',
-  primaryLight: '#dbeafe',
-  primaryDark: '#1d4ed8',
-  success: '#059669',
-  danger: '#dc2626',
-  muted: '#64748b',
-  text: '#0f172a',
-  textSecondary: '#475569',
-  textMuted: '#94a3b8',
+const lightPalette = {
+  background: '#F6F8FC',
+  card: '#FFFFFF',
+  cardAlt: '#F1F5FF',
+  border: '#E5EAF3',
+  text: '#111827',
+  textSecondary: '#4B5563',
+  textMuted: '#8A94A6',
+  primary: '#6366F1',
+  primarySoft: '#EEF2FF',
+  success: '#10B981',
+  info: '#0EA5E9',
+  shadow: '#0F172A',
+};
+
+const darkPalette = {
+  background: '#0B1220',
+  card: '#111827',
+  cardAlt: '#0F172A',
+  border: '#1F2937',
+  text: '#E5E7EB',
+  textSecondary: '#A1A1AA',
+  textMuted: '#6B7280',
+  primary: '#7C83FF',
+  primarySoft: '#1D2235',
+  success: '#34D399',
+  info: '#38BDF8',
+  shadow: '#000000',
 };
 
 const steps = [
-  { number: 1, title: 'Select Children', subtitle: 'Choose students to re-register' },
-  { number: 2, title: 'Update Details', subtitle: 'Review and update information' },
-  { number: 3, title: 'Choose Financing', subtitle: 'Select a payment option' },
-  { number: 4, title: 'Review & Submit', subtitle: 'Confirm and submit' },
+  { title: 'Select Children', done: true },
+  { title: 'Update Details', done: true },
+  { title: 'Choose Financing', done: true },
+  { title: 'Review & Submit', done: false },
 ];
 
 export default function Step6Review() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isSmall = width < 480;
-  const [confirmed, setConfirmed] = useState(false);
+  const colorScheme = useColorScheme();
+  const palette = useMemo(
+    () => (colorScheme === 'dark' ? darkPalette : lightPalette),
+    [colorScheme]
+  );
+
   const [menuOpen, setMenuOpen] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
-
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
-
-  const handleLogout = () => {
-    router.push('/(tabs)' as never);
-  };
+  const [confirmed, setConfirmed] = useState(false);
 
   const handleComplete = () => {
     if (!confirmed) {
-      alert('Please confirm that all information is accurate');
+      alert('Please confirm that all information is accurate and complete.');
       return;
     }
     router.push('/re-registration/step7-complete' as never);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
+
+      <View style={styles.topNav}>
+        <Pressable
+          style={({ pressed }) => [styles.menuBtn, pressed && styles.pressedBtn, { borderColor: palette.border, backgroundColor: palette.card }]}
+          onPress={() => setMenuOpen(true)}
+        >
+          <Ionicons name="menu" size={22} color={palette.text} />
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && (
-        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />
-      )}
-      <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={styles.menuHeader}>
-          <Text style={styles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={styles.closeIcon}>✕</Text>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={() => router.replace('/(tabs)' as never)} />
+
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: 150 }]} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.breadcrumb, { color: palette.textMuted }]}>Parent Portal · Re-Registration · Step 4: Review & Submit</Text>
+
+        <View style={styles.headerRow}>
+          <View style={[styles.headerIcon, { backgroundColor: palette.primarySoft }]}
+          >
+            <Text style={[styles.headerIconText, { color: palette.primary }]}>📋</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.headerTitle, { color: palette.text }]}>Review & Submit</Text>
+            <Text style={[styles.headerSubtitle, { color: palette.textSecondary }]}>Final step – Confirm your registration</Text>
+          </View>
+        </View>
+
+        <View style={[styles.infoBanner, { backgroundColor: palette.cardAlt, borderColor: palette.border }]}>
+          <Ionicons name="information-circle-outline" size={18} color={palette.info} />
+          <Text style={[styles.infoText, { color: palette.textSecondary }]}>Please review all information carefully before submitting. You can go back to make changes if needed.</Text>
+        </View>
+
+        <View style={[styles.progressCard, { backgroundColor: palette.card, borderColor: palette.border, shadowColor: palette.shadow }]}>
+          <View style={styles.progressHeader}>
+            <Text style={[styles.progressTitle, { color: palette.text }]}>Progress</Text>
+            <Text style={[styles.progressValue, { color: palette.primary }]}>100%</Text>
+          </View>
+          <View style={[styles.progressTrack, { backgroundColor: palette.cardAlt }]}
+          >
+            <View style={[styles.progressFill, { backgroundColor: palette.primary, width: '100%' }]} />
+          </View>
+          <View style={styles.stepsRow}>
+            {steps.map((step, index) => (
+              <View key={step.title} style={styles.stepItem}>
+                <View style={[styles.stepIcon, { backgroundColor: step.done ? palette.success : palette.primarySoft }]}>
+                  {step.done ? (
+                    <Ionicons name="checkmark" size={12} color="#fff" />
+                  ) : (
+                    <Text style={[styles.stepNumber, { color: palette.primary }]}>4</Text>
+                  )}
+                </View>
+                <Text style={[styles.stepText, { color: palette.textSecondary }]}>{step.title}</Text>
+                {index < steps.length - 1 && <View style={[styles.stepDivider, { backgroundColor: palette.border }]} />}
+              </View>
+            ))}
+          </View>
+          <Text style={[styles.stepFooter, { color: palette.textMuted }]}>Step 4 of 4 • 1 student</Text>
+        </View>
+
+        <View style={[styles.studentCard, { backgroundColor: palette.card, borderColor: palette.border, shadowColor: palette.shadow }]}>
+          <View style={styles.studentRow}>
+            <View style={[styles.avatar, { backgroundColor: palette.primary }]}
+            >
+              <Text style={styles.avatarText}>MR</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.studentName, { color: palette.text }]}>Mikhenso Rikhotso</Text>
+              <Text style={[styles.studentId, { color: palette.textMuted }]}>Student ID: 2020155260088</Text>
+            </View>
+            <View style={[styles.statusBadge, { backgroundColor: palette.success }]}>
+              <Ionicons name="checkmark-circle" size={14} color="#fff" />
+              <Text style={styles.statusBadgeText}>Ready to Submit</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.summaryCard, { backgroundColor: palette.card, borderColor: palette.border, shadowColor: palette.shadow }]}>
+          <Text style={[styles.cardTitle, { color: palette.text }]}>Registration Summary</Text>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>Student Name</Text>
+            <Text style={[styles.summaryValue, { color: palette.text }]}>Mikhenso Rikhotso</Text>
+          </View>
+          <View style={[styles.rowDivider, { backgroundColor: palette.border }]} />
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>Grade Level</Text>
+            <Text style={[styles.summaryValue, { color: palette.text }]}>12</Text>
+          </View>
+        </View>
+
+        <View style={[styles.summaryCard, { backgroundColor: palette.card, borderColor: palette.border, shadowColor: palette.shadow }]}>
+          <View style={styles.cardTitleRow}>
+            <Text style={[styles.cardTitle, { color: palette.text }]}>Payment Plan Details</Text>
+            <Text style={[styles.cardTitleIcon, { color: palette.textMuted }]}>📄</Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>Selected Plan</Text>
+            <Text style={[styles.summaryValue, { color: palette.text }]}>Forward Funding</Text>
+          </View>
+          <View style={[styles.rowDivider, { backgroundColor: palette.border }]} />
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>Total Amount</Text>
+            <Text style={[styles.summaryValue, { color: palette.text }]}>R 3,105</Text>
+          </View>
+          <View style={[styles.rowDivider, { backgroundColor: palette.border }]} />
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>Payment Period</Text>
+            <Text style={[styles.summaryValue, { color: palette.text }]}>–</Text>
+          </View>
+          <View style={[styles.rowDivider, { backgroundColor: palette.border }]} />
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: palette.textMuted }]}>Status</Text>
+            <View style={[styles.statusPill, { backgroundColor: palette.primarySoft }]}>
+              <Ionicons name="checkmark-circle" size={14} color={palette.success} />
+              <Text style={[styles.statusPillText, { color: palette.textSecondary }]}>Confirmed</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.confirmationCard, { backgroundColor: palette.card, borderColor: palette.border }]}>
+          <Pressable style={styles.confirmationRow} onPress={() => setConfirmed(!confirmed)}>
+            <View style={[styles.checkbox, { borderColor: palette.border }, confirmed && { backgroundColor: palette.primary, borderColor: palette.primary }]}>
+              {confirmed && <Ionicons name="checkmark" size={14} color="#fff" />}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.confirmationTitle, { color: palette.text }]}>I confirm that all information provided is accurate and complete.</Text>
+              <Text style={[styles.confirmationSubtitle, { color: palette.textSecondary }]}>By checking this box, you authorize the submission of this re-registration.</Text>
+            </View>
           </Pressable>
         </View>
-        
-        <View style={styles.menuDivider} />
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/re-registration' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📝</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Re-registration</Text>
-            <Text style={styles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/fee-forecasting' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📊</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Fee Forecasting</Text>
-            <Text style={styles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/ai-assistant' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>🤖</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>AI Assistant</Text>
-            <Text style={styles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/request-statement' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📋</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Request Statement</Text>
-            <Text style={styles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
-
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerIcon}>
-            <Text style={styles.headerIconText}>📋</Text>
-          </View>
-          <View>
-            <Text style={styles.mainTitle}>Review & Submit</Text>
-            <Text style={styles.subtitle}>Final step - Confirm your registration</Text>
-          </View>
-        </View>
-
-        {/* Info Banner */}
-        <View style={styles.infoBanner}>
-          <Text style={styles.infoIcon}>ℹ️</Text>
-          <Text style={styles.infoText}>
-            Please review all information carefully before submitting. You can go back to make changes if needed.
-          </Text>
-        </View>
-
-        <View style={[styles.contentRow, isSmall && styles.contentColumn]}>
-          {/* Sidebar */}
-          {!isSmall && (
-            <View style={styles.sidebar}>
-              <ProgressTracker steps={steps} currentStep={4} completion={100} />
-            </View>
-          )}
-
-          {/* Main Content */}
-          <View style={styles.mainContent}>
-            {/* Student Information Card */}
-            <View style={styles.studentCard}>
-              <View style={styles.studentInfo}>
-                <View style={styles.studentAvatar}>
-                  <Text style={styles.studentAvatarText}>MR</Text>
-                </View>
-                <View style={styles.studentDetails}>
-                  <Text style={styles.studentName}>Mikhenso Rikhotso</Text>
-                  <Text style={styles.studentId}>Student ID: 2020155260088</Text>
-                </View>
-              </View>
-              <View style={styles.readyBadge}>
-                <Text style={styles.readyBadgeText}>Ready to Submit</Text>
-              </View>
-            </View>
-
-            {/* Registration Summary */}
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryHeader}>
-                <View style={styles.summaryIcon}>
-                  <Text style={styles.summaryIconText}>✓</Text>
-                </View>
-                <Text style={styles.summaryTitle}>Registration Summary</Text>
-              </View>
-              <View style={styles.summaryTable}>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Student Name</Text>
-                  <Text style={styles.summaryValue}>Mikhenso Rikhotso</Text>
-                </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Grade Level</Text>
-                  <Text style={styles.summaryValue}>12</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Payment Plan Details */}
-            <View style={styles.paymentCard}>
-              <View style={styles.paymentHeader}>
-                <Text style={styles.paymentIcon}>📄</Text>
-                <Text style={styles.paymentTitle}>Payment Plan Details</Text>
-              </View>
-              <View style={styles.paymentTable}>
-                <View style={styles.paymentRow}>
-                  <Text style={styles.paymentLabel}>Selected Plan</Text>
-                  <Text style={styles.paymentValue}>forward funding</Text>
-                </View>
-                <View style={styles.paymentRow}>
-                  <Text style={styles.paymentLabel}>Total Amount</Text>
-                  <Text style={styles.paymentValue}>R 3,105</Text>
-                </View>
-                <View style={styles.paymentRow}>
-                  <Text style={styles.paymentLabel}>Payment Period</Text>
-                  <Text style={styles.paymentValue}>-</Text>
-                </View>
-                <View style={styles.paymentRow}>
-                  <Text style={styles.paymentLabel}>Status</Text>
-                  <View style={styles.statusBadge}>
-                    <Text style={styles.statusBadgeText}>Confirmed</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* Confirmation Checkbox */}
-            <View style={styles.confirmationBox}>
-              <Pressable
-                style={styles.confirmationCheckboxRow}
-                onPress={() => setConfirmed(!confirmed)}>
-                <View style={[styles.confirmationCheckbox, confirmed && styles.confirmationCheckboxChecked]}>
-                  {confirmed && <Text style={styles.confirmationCheckmark}>✓</Text>}
-                </View>
-                <View style={styles.confirmationText}>
-                  <Text style={styles.confirmationTitle}>
-                    I confirm that all information provided is accurate and complete.
-                  </Text>
-                  <Text style={styles.confirmationSubtitle}>
-                    By checking this box, you confirm that the registration details are correct and you authorize the submission of this re-registration.
-                  </Text>
-                </View>
-              </Pressable>
-            </View>
-
-            {/* Navigation */}
-            <View style={styles.navButtons}>
-              <Pressable style={styles.backBtnNav} onPress={() => router.back()}>
-                <Text style={styles.backBtnText}>Back</Text>
-              </Pressable>
-              <View style={styles.navCenter}>
-                <Text style={styles.navCenterText}>Step 4 of 4 • 1 student</Text>
-              </View>
-              <Pressable
-                style={[styles.completeBtn, !confirmed && styles.completeBtnDisabled]}
-                onPress={handleComplete}>
-                <Text style={styles.completeBtnText}>Complete Registration →</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
       </ScrollView>
+
+      <View style={[styles.stickyFooter, { backgroundColor: palette.background, borderColor: palette.border }]}>
+        <Text style={[styles.footerNote, { color: palette.textMuted }]}>Step 4 of 4 • 1 student</Text>
+        <View style={styles.footerActions}>
+          <Pressable style={[styles.ghostButton, { borderColor: palette.border }]} onPress={() => router.back()}>
+            <Text style={[styles.ghostButtonText, { color: palette.textSecondary }]}>Back</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.primaryButton,
+              { backgroundColor: palette.primary },
+              !confirmed && styles.primaryButtonDisabled,
+            ]}
+            onPress={handleComplete}
+            disabled={!confirmed}
+          >
+            <Text style={styles.primaryButtonText}>Complete Registration →</Text>
+          </Pressable>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: palette.background },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
-  },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  hamburgerIcon: { fontSize: 24, color: palette.text },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  logoBox: {
+  safeArea: { flex: 1 },
+  topNav: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 6 },
+  menuBtn: {
     width: 36,
     height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoLetter: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  brandTitle: { color: palette.text, fontSize: 15, fontWeight: '700' },
-  brandSubtitle: { color: palette.muted, fontSize: 11 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    justifyContent: 'center',
-  },
-  logoutIcon: { fontSize: 18, color: '#dc2626' },
-  logoutText: { color: '#dc2626', fontWeight: '600', fontSize: 12 },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 999,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1000,
-    borderRightWidth: 1,
-    borderRightColor: palette.border,
-  },
-  menuHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-  },
-  menuTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  closeIcon: { fontSize: 20, color: palette.text },
-  menuDivider: { height: 1, backgroundColor: palette.border },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
-  },
-  dropdownIcon: { fontSize: 20 },
-  itemContent: { flex: 1 },
-  dropdownText: { fontSize: 14, fontWeight: '600', color: palette.text },
-  dropdownSubtext: { fontSize: 12, color: palette.muted, marginTop: 2 },
-  container: { padding: 16, paddingTop: 24, paddingBottom: 32 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
-  headerIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerIconText: { fontSize: 24 },
-  mainTitle: { fontSize: 22, fontWeight: '800', color: palette.text },
-  subtitle: { fontSize: 13, color: palette.muted, marginTop: 2 },
-  infoBanner: {
-    flexDirection: 'row',
-    backgroundColor: '#e0f2fe',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 20,
-    gap: 10,
-  },
-  infoIcon: { fontSize: 20 },
-  infoText: { flex: 1, fontSize: 13, color: palette.text, lineHeight: 18 },
-  contentRow: { flexDirection: 'row', gap: 16 },
-  contentColumn: { flexDirection: 'column' },
-  sidebar: { width: 200 },
-  mainContent: { flex: 1 },
-  studentCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#e0f2fe',
-    padding: 16,
     borderRadius: 12,
-    marginBottom: 16,
-  },
-  studentInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  studentAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: palette.primary,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  studentAvatarText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  studentDetails: { flex: 1 },
-  studentName: { fontSize: 16, fontWeight: '700', color: palette.text, marginBottom: 4 },
-  studentId: { fontSize: 12, color: palette.muted },
-  readyBadge: {
-    backgroundColor: palette.success,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  readyBadgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  summaryCard: {
-    backgroundColor: '#d1fae5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#a7f3d0',
   },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
-  },
-  summaryIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: palette.success,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  summaryIconText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  summaryTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  summaryTable: { gap: 8 },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  summaryLabel: { fontSize: 13, color: palette.muted },
-  summaryValue: { fontSize: 13, fontWeight: '700', color: palette.text },
-  paymentCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
-  paymentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
-  },
-  paymentIcon: { fontSize: 24 },
-  paymentTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  paymentTable: { gap: 8 },
-  paymentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  paymentLabel: { fontSize: 13, color: palette.muted },
-  paymentValue: { fontSize: 13, fontWeight: '700', color: palette.text },
-  statusBadge: {
-    backgroundColor: palette.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-  confirmationBox: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#fde68a',
-  },
-  confirmationCheckboxRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  confirmationCheckbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: palette.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  confirmationCheckboxChecked: {
-    backgroundColor: palette.primary,
-    borderColor: palette.primary,
-  },
-  confirmationCheckmark: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  confirmationText: { flex: 1 },
-  confirmationTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: palette.text,
-    marginBottom: 4,
-  },
-  confirmationSubtitle: {
-    fontSize: 12,
-    color: palette.muted,
-    lineHeight: 16,
-  },
-  navButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: palette.border,
-  },
-  backBtnNav: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
-  backBtnText: { color: palette.text, fontWeight: '600' },
-  navCenter: { flex: 1, alignItems: 'center' },
-  navCenterText: { fontSize: 12, color: palette.muted },
-  completeBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#e0f2fe',
-  },
-  completeBtnDisabled: {
-    backgroundColor: palette.muted,
-    opacity: 0.5,
-  },
-  completeBtnText: { color: palette.primary, fontWeight: '700', fontSize: 14 },
-});
+  pressedBtn: { opacity: 0.8 },
+  scrollContent: { padding: 16 },
+  breadcrumb: { fontSize: 12, marginBottom: 12 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  headerIcon: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  headerIconText: { fontSize: 20 },
+  headerTitle: { fontSize: 22, fontWeight: '700' },
+  headerSubtitle: { fontSize: 14, marginTop: 4 },
+  infoBanner: { flexDirection: 'row', gap: 10, padding: 14, borderRadius: 14, borderWidth: 1, marginBottom: 16 },
+  infoText: { flex: 1, fontSize: 13, lineHeight: 18 },
 
+  progressCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  progressTitle: { fontSize: 14, fontWeight: '600' },
+  progressValue: { fontSize: 14, fontWeight: '700' },
+  progressTrack: { height: 8, borderRadius: 999, overflow: 'hidden', marginBottom: 14 },
+  progressFill: { height: 8, borderRadius: 999 },
+  stepsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' },
+  stepItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  stepIcon: { width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  stepNumber: { fontSize: 11, fontWeight: '700' },
+  stepText: { fontSize: 12 },
+  stepDivider: { width: 12, height: 1 },
+  stepFooter: { fontSize: 12, marginTop: 10 },
+
+  studentCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  studentRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  avatarText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  studentName: { fontSize: 16, fontWeight: '700' },
+  studentId: { fontSize: 12, marginTop: 2 },
+  statusBadge: { flexDirection: 'row', gap: 6, alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 },
+  statusBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+
+  summaryCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1,
+  },
+  cardTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  cardTitle: { fontSize: 15, fontWeight: '700', marginBottom: 10 },
+  cardTitleIcon: { fontSize: 18 },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
+  summaryLabel: { fontSize: 12 },
+  summaryValue: { fontSize: 13, fontWeight: '700' },
+  rowDivider: { height: 1 },
+  statusPill: { flexDirection: 'row', gap: 6, alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
+  statusPillText: { fontSize: 12, fontWeight: '600' },
+
+  confirmationCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 10,
+  },
+  confirmationRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, justifyContent: 'center', alignItems: 'center', marginTop: 2 },
+  confirmationTitle: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
+  confirmationSubtitle: { fontSize: 12, lineHeight: 16 },
+
+  stickyFooter: {
+    borderTopWidth: 1,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 16,
+  },
+  footerNote: { fontSize: 12, marginBottom: 10, textAlign: 'center' },
+  footerActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  ghostButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  ghostButtonText: { fontSize: 14, fontWeight: '600' },
+  primaryButton: {
+    flex: 2,
+    paddingVertical: 12,
+    borderRadius: 999,
+    alignItems: 'center',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  primaryButtonDisabled: { opacity: 0.5 },
+  primaryButtonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+});

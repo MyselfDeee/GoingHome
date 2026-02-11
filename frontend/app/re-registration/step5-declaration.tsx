@@ -5,490 +5,464 @@ import {
   Text,
   View,
   Pressable,
-  SafeAreaView,
   TextInput,
-  useWindowDimensions,
-  Animated,
+  StatusBar,
+  Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import ProgressTracker from '@/components/re-registration/ProgressTracker';
+import { Ionicons } from '@expo/vector-icons';
+import SideMenu from '../../components/SideMenu';
 
+// Consistent Palette
 const palette = {
-  background: '#f0f4f8',
-  card: '#ffffff',
-  cardLight: '#f8fafc',
-  border: '#e2e8f0',
-  primary: '#2563eb',
-  primaryLight: '#dbeafe',
-  primaryDark: '#1d4ed8',
-  success: '#059669',
-  danger: '#dc2626',
-  muted: '#64748b',
-  text: '#0f172a',
-  textSecondary: '#475569',
-  textMuted: '#94a3b8',
+  background: '#F9FAFC', 
+  card: '#FFFFFF',
+  text: '#1E293B',
+  textSecondary: '#64748B', 
+  textMuted: '#94A3B8',
+  primary: '#6366F1',
+  primaryLight: '#EEF2FF',
+  border: '#E2E8F0',
+  success: '#10B981',
+  shadow: '#0F172A',
+  inputBg: '#F8FAFC',
 };
 
-const steps = [
-  { number: 1, title: 'Select Children', subtitle: 'Choose students to re-register' },
-  { number: 2, title: 'Update Details', subtitle: 'Review and update information' },
-  { number: 3, title: 'Choose Financing', subtitle: 'Select a payment option' },
-  { number: 4, title: 'Review & Submit', subtitle: 'Confirm and submit' },
+const declarationSections = [
+    {
+        title: "Code of Conduct Acknowledgement",
+        text: "By submitting this application, I acknowledge that I have read, understood, and agree to abide by the school's Code of Conduct. I understand that any violation of these standards may result in disciplinary action, including suspension or expulsion."
+    },
+    {
+        title: "Financial Responsibility Acceptance",
+        text: "I acknowledge full responsibility for all school fees, charges, and associated costs as outlined in the fee agreement. I understand that failure to meet payment obligations may affect my child's continued enrollment at the institution."
+    },
+    {
+        title: "Accuracy of Information Declaration",
+        text: "I declare that all information provided in this application is true, complete, and accurate to the best of my knowledge. I understand that providing false or misleading information may result in the rejection of this application or termination of enrollment."
+    },
+    {
+        title: "Consent to Verify Information",
+        text: "I consent to the school verifying any information provided in this application through appropriate channels, including but not limited to previous schools, employers, and reference contacts."
+    },
+    {
+        title: "Data Processing Consent (POPIA/GDPR Compliant)",
+        text: "I consent to the collection, storage, processing, and use of my personal information and that of my child for the purposes of education administration, communication, and compliance with legal requirements. I understand my rights regarding data protection and privacy."
+    },
+    {
+        title: "School Rules and Disciplinary Policy Agreement",
+        text: "I agree to support and enforce the school's rules, policies, and disciplinary procedures. I understand that cooperation between home and school is essential for my child's success and the wellbeing of the school community."
+    }
 ];
 
-const declarations = [
-  {
-    title: 'Code of Conduct Acknowledgement',
-    text: "By submitting this application, I acknowledge that I have read, understood, and agree to abide by the school's Code of Conduct. I understand that any violation of these standards may result in disciplinary action, including suspension or expulsion.",
-  },
-  {
-    title: 'Financial Responsibility Acceptance',
-    text: "I acknowledge full responsibility for all school fees, charges, and associated costs as outlined in the fee agreement. I understand that failure to meet payment obligations may affect my child's continued enrollment at the institution.",
-  },
-];
-
-const confirmations = [
-  "I consent to storing my information for the school audit processes",
-  "I consent to the school processing my information for affordability check",
-  "I confirm that all information provided in this application is true and correct.",
-  "I agree to abide by the school's rules, policies, and code of conduct.",
-  "I acknowledge responsibility for all school fees as per the agreement.",
-  "I consent to the school verifying my information where required.",
-  "I consent to the storage and processing of my personal information.",
+const confirmationItems = [
+    "I consent to storing my information for the school audit processes",
+    "I consent to the school processing my information for affordability check",
+    "I confirm that all information provided in this application is true and correct.",
+    "I agree to abide by the school's rules, policies, and code of conduct.",
+    "I acknowledge responsibility for all school fees as per the agreement.",
+    "I consent to the school verifying my information where required.",
+    "I consent to the storage and processing of my personal information."
 ];
 
 export default function Step5Declaration() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isSmall = width < 480;
-  const [checkedItems, setCheckedItems] = useState<boolean[]>(new Array(confirmations.length).fill(false));
-  const [signature, setSignature] = useState('');
-  const [city, setCity] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
+  
+  // State for checkboxes
+  const [checkedState, setCheckedState] = useState<boolean[]>(
+      new Array(confirmationItems.length).fill(false)
+  );
 
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
-
+  // State for signature
+  const [signatureName, setSignatureName] = useState('');
+  const [city, setCity] = useState('');
+  
   const handleLogout = () => {
-    router.push('/(tabs)' as never);
+    router.replace('/(tabs)' as never);
   };
 
-  const toggleCheck = (index: number) => {
-    const newChecked = [...checkedItems];
-    newChecked[index] = !newChecked[index];
-    setCheckedItems(newChecked);
+  const toggleCheckbox = (index: number) => {
+      const updated = [...checkedState];
+      updated[index] = !updated[index];
+      setCheckedState(updated);
   };
 
-  const allChecked = checkedItems.every((checked) => checked);
-  const canContinue = allChecked && signature.trim().length >= 3;
+  const areAllChecked = checkedState.every(Boolean);
+  const isFormValid = areAllChecked && signatureName.trim().length >= 3;
 
   const handleContinue = () => {
-    if (!canContinue) {
-      alert('Please complete all required fields and confirmations');
-      return;
+    if (!isFormValid) {
+        Alert.alert("Incomplete", "Please complete all checkboxes and sign the declaration.");
+        return;
     }
+    // Proceed to Step 6 (Review/Success)
     router.push('/re-registration/step6-review' as never);
   };
 
+  const handleSaveProgress = () => {
+      Alert.alert("Progress Saved", "Your declaration drafts have been saved.");
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
+
+      {/* Top Nav */}
+      <View style={styles.topNav}>
+        <Pressable 
+            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
+            onPress={() => setMenuOpen(true)}
+        >
+          <Ionicons name="menu" size={24} color={palette.text} />
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && (
-        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />
-      )}
-      <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={styles.menuHeader}>
-          <Text style={styles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          {/* Header */}
+          <View style={styles.headerContainer}>
+              <View style={styles.headerIconBox}>
+                  <Ionicons name="document-text-outline" size={24} color={palette.primary} />
+              </View>
+              <View>
+                  <Text style={styles.headerTitle}>Declaration</Text>
+                  <Text style={styles.headerSubtitle}>Please read and confirm the declarations. Select payment options and sign digitally to proceed.</Text>
+              </View>
+          </View>
+
+         {/* Steps Indicator */}
+         <View style={styles.stepsCard}>
+            <Text style={styles.sectionHeaderTitle}>Registration Steps</Text>
+            <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.stepsScrollContent}
+            >
+                <View style={styles.stepItemCompleted}>
+                    <Ionicons name="checkmark-circle" size={20} color={palette.success} />
+                    <Text style={styles.stepTextCompleted}>Children</Text>
+                </View>
+                <View style={styles.stepDivider} />
+                <View style={styles.stepItemCompleted}>
+                    <Ionicons name="checkmark-circle" size={20} color={palette.success} />
+                    <Text style={styles.stepTextCompleted}>Details</Text>
+                </View>
+                <View style={styles.stepDivider} />
+                <View style={styles.stepItemCompleted}>
+                    <Ionicons name="checkmark-circle" size={20} color={palette.success} />
+                    <Text style={styles.stepTextCompleted}>Financing</Text>
+                </View>
+                <View style={styles.stepDivider} />
+                <View style={styles.stepItemActive}>
+                    <View style={styles.stepCircleActive}>
+                            <Text style={styles.stepNumberActive}>4</Text>
+                    </View>
+                    <Text style={styles.stepTextActive}>Confirm</Text>
+                </View>
+            </ScrollView>
         </View>
-        
-        <View style={styles.menuDivider} />
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/re-registration' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📝</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Re-registration</Text>
-            <Text style={styles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/fee-forecasting' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📊</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Fee Forecasting</Text>
-            <Text style={styles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/ai-assistant' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>🤖</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>AI Assistant</Text>
-            <Text style={styles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/request-statement' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📋</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Request Statement</Text>
-            <Text style={styles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.mainTitle}>Student Re-Registration 2024</Text>
-        <Text style={styles.subtitle}>Complete the re-registration process for the upcoming academic year</Text>
-
-        <View style={[styles.contentRow, isSmall && styles.contentColumn]}>
-          {/* Sidebar */}
-          {!isSmall && (
-            <View style={styles.sidebar}>
-              <ProgressTracker steps={steps} currentStep={4} completion={90} />
+        {/* 1. Declaration Content Frame */}
+        <View style={styles.sectionContainer}>
+            <View style={styles.cardHeader}>
+                <Ionicons name="library-outline" size={20} color={palette.primary} />
+                <Text style={styles.cardHeaderTitle}>Terms & Conditions</Text>
             </View>
-          )}
-
-          {/* Main Content */}
-          <View style={styles.mainContent}>
-            <Text style={styles.sectionTitle}>Declaration</Text>
-            <Text style={styles.sectionSubtitle}>
-              Please read and confirm the declarations. Select payment options and sign digitally to proceed.
-            </Text>
-
-            {/* Declaration Texts */}
-            {declarations.map((declaration, idx) => (
-              <View key={idx} style={styles.declarationBox}>
-                <ScrollView style={styles.declarationScroll} nestedScrollEnabled>
-                  <Text style={styles.declarationText}>{declaration.text}</Text>
+            
+            <View style={styles.cardBody}>
+                <ScrollView 
+                    style={styles.termsScroll}
+                    nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}
+                >
+                    {declarationSections.map((section, index) => (
+                        <View key={index} style={styles.textBlock}>
+                            <Text style={styles.textBlockTitle}>{section.title}</Text>
+                            <Text style={styles.textBlockBody}>{section.text}</Text>
+                        </View>
+                    ))}
                 </ScrollView>
-              </View>
-            ))}
 
-            {/* Download Link */}
-            <Pressable style={styles.downloadBtn}>
-              <Text style={styles.downloadIcon}>📥</Text>
-              <Text style={styles.downloadText}>Download Full Policy (PDF)</Text>
-            </Pressable>
+                <View style={styles.divider} />
 
-            {/* Required Confirmations */}
-            <View style={styles.confirmationsSection}>
-              <Text style={styles.confirmationsTitle}>Required Confirmations</Text>
-              <Text style={styles.confirmationsSubtitle}>All confirmations below are required to proceed</Text>
-              {confirmations.map((confirmation, idx) => (
-                <Pressable
-                  key={idx}
-                  style={styles.checkboxRow}
-                  onPress={() => toggleCheck(idx)}>
-                  <View style={[styles.checkbox, checkedItems[idx] && styles.checkboxChecked]}>
-                    {checkedItems[idx] && <Text style={styles.checkmark}>✓</Text>}
-                  </View>
-                  <Text style={styles.checkboxText}>{confirmation}</Text>
+                <Pressable style={({pressed}) => [styles.downloadBtn, pressed && styles.pressedBtn]}>
+                    <Ionicons name="cloud-download-outline" size={18} color={palette.primary} />
+                    <Text style={styles.downloadBtnText}>Download Full Policy (PDF)</Text>
                 </Pressable>
-              ))}
             </View>
-
-            {/* Digital Signature */}
-            <View style={styles.signatureSection}>
-              <Text style={styles.signatureTitle}>Digital Signature</Text>
-              <Text style={styles.signatureSubtitle}>
-                Your digital signature is required to complete this declaration
-              </Text>
-              <View style={styles.signatureFields}>
-                <View style={styles.signatureField}>
-                  <Text style={styles.label}>Full Name (as Digital Signature) *</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={signature}
-                    onChangeText={setSignature}
-                    placeholder="Enter your full name"
-                  />
-                  <Text style={styles.hint}>Minimum 3 characters required</Text>
-                </View>
-                <View style={styles.signatureField}>
-                  <Text style={styles.label}>Place / City</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={city}
-                    onChangeText={setCity}
-                    placeholder="Enter city (optional)"
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* Navigation */}
-            <View style={styles.navButtons}>
-              <Pressable style={styles.backBtnNav} onPress={() => router.back()}>
-                <Text style={styles.backBtnText}>Back</Text>
-              </Pressable>
-              <View style={styles.rightButtons}>
-                <Pressable style={styles.saveBtn}>
-                  <Text style={styles.saveBtnText}>Save Progress</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.continueBtn, !canContinue && styles.continueBtnDisabled]}
-                  onPress={handleContinue}>
-                  <Text style={styles.continueBtnText}>Continue</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
         </View>
+
+        {/* 2. Required Confirmations Frame */}
+        <View style={styles.sectionContainer}>
+            <View style={styles.cardHeader}>
+                <Ionicons name="checkbox-outline" size={20} color={palette.primary} />
+                <View>
+                    <Text style={styles.cardHeaderTitle}>Required Confirmations</Text>
+                    <Text style={styles.cardHeaderSubtitle}>All confirmations below are required to proceed</Text>
+                </View>
+            </View>
+            
+            <View style={styles.cardBody}>
+                {confirmationItems.map((item, index) => (
+                    <Pressable 
+                        key={index} 
+                        style={styles.checkItemRow}
+                        onPress={() => toggleCheckbox(index)}
+                    >
+                        <View style={[styles.checkbox, checkedState[index] && styles.checkboxActive]}>
+                            {checkedState[index] && <Ionicons name="checkmark" size={14} color="#fff" />}
+                        </View>
+                        <Text style={styles.checkItemText}>{item}</Text>
+                    </Pressable>
+                ))}
+            </View>
+        </View>
+
+        {/* 3. Digital Signature Frame */}
+        <View style={styles.sectionContainer}>
+            <View style={styles.cardHeader}>
+                <Ionicons name="pencil-outline" size={20} color={palette.primary} />
+                <View>
+                    <Text style={styles.cardHeaderTitle}>Digital Signature</Text>
+                    <Text style={styles.cardHeaderSubtitle}>Your digital signature is required to complete this declaration</Text>
+                </View>
+            </View>
+
+            <View style={styles.cardBody}>
+                {/* Name Input */}
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Full Name (as Digital Signature) *</Text>
+                    <View style={styles.inputWrapper}>
+                        <TextInput
+                            style={styles.textInput}
+                            placeholder="Enter your full name"
+                            placeholderTextColor={palette.textMuted}
+                            value={signatureName}
+                            onChangeText={setSignatureName}
+                        />
+                    </View>
+                    <Text style={styles.helperText}>Minimum 3 characters required</Text>
+                </View>
+
+                {/* City Input */}
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Place / City</Text>
+                    <View style={styles.inputWrapper}>
+                        <TextInput
+                            style={styles.textInput}
+                            placeholder="Enter city (optional)"
+                            placeholderTextColor={palette.textMuted}
+                            value={city}
+                            onChangeText={setCity}
+                        />
+                    </View>
+                </View>
+
+                {/* Date Display (Read Only) */}
+                <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Date</Text>
+                    <View style={[styles.inputWrapper, styles.readOnlyInput]}>
+                        <Text style={styles.readOnlyText}>2026/02/10</Text>
+                        <Ionicons name="calendar-outline" size={18} color={palette.textMuted} />
+                    </View>
+                </View>
+            </View>
+        </View>
+
+        {/* Footer Buttons */}
+        <View style={styles.footerRow}>
+            <Pressable 
+                style={({pressed}) => [styles.backBtn, pressed && styles.pressedBtn]}
+                onPress={() => router.back()}
+            >
+                <Text style={styles.backBtnText}>Back</Text>
+            </Pressable>
+            
+            <View style={styles.rightActions}>
+                <Pressable 
+                    style={({pressed}) => [styles.saveBtn, pressed && styles.pressedBtn]}
+                    onPress={handleSaveProgress}
+                >
+                    <Text style={styles.saveBtnText}>Save Progress</Text>
+                </Pressable>
+
+                <Pressable
+                    style={({pressed}) => [
+                        styles.continueBtn, 
+                        (!isFormValid) && styles.continueBtnDisabled,
+                        pressed && styles.pressedBtn
+                    ]}
+                    onPress={handleContinue}
+                    disabled={!isFormValid}
+                >
+                    <Text style={styles.continueBtnText}>Continue</Text>
+                    <Ionicons name="arrow-forward" size={16} color="#fff" />
+                </Pressable>
+            </View>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: palette.background },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
+  safeArea: {
+    flex: 1,
+    backgroundColor: palette.background,
   },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+  topNav: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
   },
-  hamburgerIcon: { fontSize: 24, color: palette.text },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  logoBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  menuBtn: {
+      padding: 8,
+      alignSelf: 'flex-start',
+      borderRadius: 8,
+      backgroundColor: '#fff',
+      borderWidth: 1,
+      borderColor: palette.border,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
   },
-  logoLetter: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  brandTitle: { color: palette.text, fontSize: 15, fontWeight: '700' },
-  brandSubtitle: { color: palette.muted, fontSize: 11 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    justifyContent: 'center',
+  pressedBtn: { opacity: 0.8 },
+  scrollContent: { padding: 16, paddingBottom: 60 },
+
+  // Header
+  headerContainer: {
+      flexDirection: 'row',
+      marginBottom: 24,
+      marginTop: 8,
   },
-  logoutIcon: { fontSize: 18, color: '#dc2626' },
-  logoutText: { color: '#dc2626', fontWeight: '600', fontSize: 12 },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 999,
+  headerIconBox: {
+      width: 44,
+      height: 44,
+      borderRadius: 12,
+      backgroundColor: palette.primaryLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
   },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1000,
-    borderRightWidth: 1,
-    borderRightColor: palette.border,
+  headerTitle: { fontSize: 22, fontWeight: '700', color: palette.text, marginBottom: 4 },
+  headerSubtitle: { fontSize: 14, color: palette.textSecondary, lineHeight: 20, flex: 1 },
+
+  // Steps
+  stepsCard: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 24,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
   },
-  menuHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+  sectionHeaderTitle: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: palette.textMuted,
+      marginBottom: 16,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
   },
-  menuTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  closeIcon: { fontSize: 20, color: palette.text },
-  menuDivider: { height: 1, backgroundColor: palette.border },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
+  stepsScrollContent: { flexDirection: 'row', alignItems: 'center' },
+  stepItemCompleted: { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: 0.5 },
+  stepTextCompleted: { fontSize: 13, fontWeight: '600', color: palette.text, textDecorationLine: 'line-through' },
+  stepItemActive: {
+      flexDirection: 'row', alignItems: 'center', backgroundColor: palette.primaryLight,
+      paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, gap: 8,
   },
-  dropdownIcon: { fontSize: 20 },
-  itemContent: { flex: 1 },
-  dropdownText: { fontSize: 14, fontWeight: '600', color: palette.text },
-  dropdownSubtext: { fontSize: 12, color: palette.muted, marginTop: 2 },
-  container: { padding: 16, paddingTop: 24, paddingBottom: 32 },
-  mainTitle: { fontSize: 24, fontWeight: '800', color: palette.text, marginBottom: 4 },
-  subtitle: { fontSize: 14, color: palette.muted, marginBottom: 20 },
-  contentRow: { flexDirection: 'row', gap: 16 },
-  contentColumn: { flexDirection: 'column' },
-  sidebar: { width: 200 },
-  mainContent: { flex: 1 },
-  sectionTitle: { fontSize: 20, fontWeight: '700', color: palette.text, marginBottom: 4 },
-  sectionSubtitle: { fontSize: 13, color: palette.muted, marginBottom: 20, lineHeight: 18 },
-  declarationBox: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: palette.border,
-    padding: 12,
-    marginBottom: 12,
-    maxHeight: 120,
+  stepCircleActive: {
+      width: 20, height: 20, borderRadius: 10, backgroundColor: palette.primary,
+      justifyContent: 'center', alignItems: 'center',
   },
-  declarationScroll: { maxHeight: 100 },
-  declarationText: { fontSize: 13, color: palette.text, lineHeight: 18 },
+  stepNumberActive: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  stepTextActive: { fontSize: 13, fontWeight: '600', color: palette.primary },
+  stepDivider: { height: 1, width: 24, backgroundColor: palette.border, marginHorizontal: 8 },
+
+  // Unified Section Card Style
+  sectionContainer: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: palette.border,
+      marginBottom: 24,
+      overflow: 'hidden',
+  },
+  cardHeader: {
+      flexDirection: 'row', alignItems: 'center', gap: 10,
+      paddingHorizontal: 20, paddingVertical: 16,
+      backgroundColor: '#F8FAFC',
+      borderBottomWidth: 1, borderBottomColor: palette.border,
+  },
+  cardHeaderTitle: { fontSize: 15, fontWeight: '700', color: palette.text },
+  cardHeaderSubtitle: { fontSize: 12, color: palette.textMuted, marginTop: 2 },
+  cardBody: { padding: 20 },
+  
+  termsScroll: { maxHeight: 240, marginBottom: 16 },
+
+  // Declaration Specifics
+  textBlock: { marginBottom: 20 },
+  textBlockTitle: { fontSize: 14, fontWeight: '700', color: palette.text, marginBottom: 4 },
+  textBlockBody: { fontSize: 13, color: palette.textSecondary, lineHeight: 20 },
+  divider: { height: 1, backgroundColor: palette.border, marginBottom: 20 },
   downloadBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 24,
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+      paddingVertical: 12,
+      borderWidth: 1, borderColor: palette.primary, borderRadius: 8, borderStyle: 'dashed',
+      backgroundColor: palette.primaryLight,
   },
-  downloadIcon: { fontSize: 18 },
-  downloadText: { color: palette.primary, fontSize: 13, fontWeight: '600' },
-  confirmationsSection: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
-  confirmationsTitle: { fontSize: 16, fontWeight: '700', color: palette.text, marginBottom: 4 },
-  confirmationsSubtitle: { fontSize: 12, color: palette.muted, marginBottom: 16 },
-  checkboxRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-    gap: 12,
-  },
+  downloadBtnText: { fontSize: 13, fontWeight: '600', color: palette.primary },
+
+  // Checkbox Specifics
+  checkItemRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16, gap: 12 },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: palette.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 2,
+      width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: palette.border,
+      marginTop: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff',
   },
-  checkboxChecked: {
-    backgroundColor: palette.primary,
-    borderColor: palette.primary,
+  checkboxActive: { backgroundColor: palette.primary, borderColor: palette.primary },
+  checkItemText: { flex: 1, fontSize: 14, color: palette.text, lineHeight: 20 },
+
+  // Signature Specifics
+  inputGroup: { marginBottom: 16 },
+  inputLabel: { fontSize: 13, fontWeight: '600', color: palette.textSecondary, marginBottom: 6 },
+  inputWrapper: {
+      flexDirection: 'row', alignItems: 'center',
+      borderWidth: 1, borderColor: palette.border, borderRadius: 10,
+      backgroundColor: palette.inputBg, paddingHorizontal: 12,
+      height: 44,
   },
-  checkmark: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  checkboxText: { flex: 1, fontSize: 13, color: palette.text, lineHeight: 20 },
-  signatureSection: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: palette.border,
+  textInput: { flex: 1, fontSize: 14, color: palette.text },
+  helperText: { fontSize: 11, color: palette.textMuted, marginTop: 4 },
+  readOnlyInput: { backgroundColor: '#F1F5F9', justifyContent: 'space-between' },
+  readOnlyText: { fontSize: 14, color: palette.textSecondary, fontWeight: '500' },
+
+  // Footer
+  footerRow: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10,
   },
-  signatureTitle: { fontSize: 16, fontWeight: '700', color: palette.text, marginBottom: 4 },
-  signatureSubtitle: { fontSize: 12, color: palette.muted, marginBottom: 16 },
-  signatureFields: { gap: 16 },
-  signatureField: { marginBottom: 12 },
-  label: { fontSize: 13, fontWeight: '600', color: palette.text, marginBottom: 6 },
-  input: {
-    backgroundColor: '#f3f4f6',
-    borderWidth: 1,
-    borderColor: palette.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: palette.text,
+  backBtn: {
+      paddingVertical: 14, paddingHorizontal: 20,
   },
-  hint: { fontSize: 11, color: palette.muted, marginTop: 4 },
-  navButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: palette.border,
-  },
-  backBtnNav: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
-  backBtnText: { color: palette.text, fontWeight: '600' },
-  rightButtons: { flexDirection: 'row', gap: 12 },
+  backBtnText: { fontSize: 15, fontWeight: '600', color: palette.textSecondary },
+  rightActions: { flexDirection: 'row', gap: 12 },
   saveBtn: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: palette.border,
+      paddingVertical: 14, paddingHorizontal: 20, borderRadius: 26, borderWidth: 1, borderColor: palette.border, backgroundColor: '#fff',
   },
-  saveBtnText: { color: palette.text, fontWeight: '600' },
+  saveBtnText: { fontSize: 14, fontWeight: '600', color: palette.textSecondary },
   continueBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
+      flexDirection: 'row', gap: 8, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 26, backgroundColor: palette.primary,
+      alignItems: 'center', justifyContent: 'center',
   },
-  continueBtnDisabled: {
-    backgroundColor: palette.muted,
-    opacity: 0.5,
-  },
-  continueBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  continueBtnDisabled: { backgroundColor: palette.textMuted },
+  continueBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 });
 

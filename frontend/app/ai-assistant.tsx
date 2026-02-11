@@ -1,6 +1,8 @@
 import React from 'react';
-import { Animated, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, View, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import SideMenu from '../components/SideMenu';
 import { generateAIResponse } from '../utils/aiService';
 
 const darkPalette = {
@@ -39,16 +41,7 @@ export default function AIAssistant() {
   const [input, setInput] = React.useState('');
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
   const dynamicStyles = createStyles(palette);
-
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
 
   const handleLogout = () => {
     router.push('/(tabs)' as never);
@@ -100,122 +93,7 @@ export default function AIAssistant() {
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && <Pressable style={dynamicStyles.menuOverlay} onPress={() => setMenuOpen(false)} />}
-      <Animated.View style={[dynamicStyles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={dynamicStyles.menuHeader}>
-          <Text style={dynamicStyles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={dynamicStyles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
-
-        <View style={dynamicStyles.menuDivider} />
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/parent-dashboard' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>🏠</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>Parent Dashboard</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>Overview & payments</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/re-registration' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>📝</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>Re-registration</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/fee-forecasting' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>📊</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>Fee Forecasting</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/ai-assistant' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>🤖</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>AI Assistant</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/request-statement' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>📋</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>Request Statement</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/admissions' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>🎓</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>Admissions</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>Track applications</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/announcements' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>📢</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>Announcements</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>School news & updates</Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={dynamicStyles.dropdownItem}
-          onPress={() => {
-            setMenuOpen(false);
-            router.push('/profile' as never);
-          }}>
-          <Text style={dynamicStyles.dropdownIcon}>👤</Text>
-          <View style={dynamicStyles.itemContent}>
-            <Text style={dynamicStyles.dropdownText}>Profile</Text>
-            <Text style={dynamicStyles.dropdownSubtext}>Manage your information</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
 
       <ScrollView contentContainerStyle={dynamicStyles.messagesContainer} showsVerticalScrollIndicator={false}>
         {/* Page Header */}

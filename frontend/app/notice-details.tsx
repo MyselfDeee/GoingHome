@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View, Pressable, SafeAreaView, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 interface Notice {

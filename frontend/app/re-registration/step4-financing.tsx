@@ -5,654 +5,507 @@ import {
   Text,
   View,
   Pressable,
-  SafeAreaView,
   useWindowDimensions,
+  StatusBar,
   Animated,
+  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import ProgressTracker from '@/components/re-registration/ProgressTracker';
+import { Ionicons } from '@expo/vector-icons';
+import SideMenu from '../../components/SideMenu';
 
+// Consistent Palette
 const palette = {
-  background: '#f0f4f8',
-  card: '#ffffff',
-  cardLight: '#f8fafc',
-  border: '#e2e8f0',
-  primary: '#2563eb',
-  primaryLight: '#dbeafe',
-  primaryDark: '#1d4ed8',
-  success: '#059669',
-  danger: '#dc2626',
-  muted: '#64748b',
-  text: '#0f172a',
-  textSecondary: '#475569',
-  textMuted: '#94a3b8',
+  background: '#F9FAFC', 
+  card: '#FFFFFF',
+  text: '#1E293B',
+  textSecondary: '#64748B', 
+  textMuted: '#94A3B8',
+  primary: '#6366F1',
+  primaryLight: '#EEF2FF',
+  border: '#E2E8F0',
+  success: '#10B981',
+  warningBg: '#FFFBEB',
+  warningText: '#B45309',
+  shadow: '#0F172A',
+  inputBg: '#F8FAFC',
 };
 
-const steps = [
-  { number: 1, title: 'Select Children', subtitle: 'Choose students to re-register' },
-  { number: 2, title: 'Update Details', subtitle: 'Review and update information' },
-  { number: 3, title: 'Choose Financing', subtitle: 'Select a payment option' },
-  { number: 4, title: 'Review & Submit', subtitle: 'Confirm and submit' },
+// Mock Data
+const mockStudents = [
+  { 
+      id: '1', 
+      initials: 'MR',
+      firstName: 'Mikhenso', 
+      lastName: 'Rikhotso',
+      grade: 'Grade 11', 
+      annualFees: 'R 32,400' 
+  },
+  { 
+      id: '2', 
+      initials: 'TR',
+      firstName: 'Tlangelani', 
+      lastName: 'Rikhotso',
+      grade: 'Grade 9', 
+      annualFees: 'R 28,500' 
+  },
 ];
 
 const financingPlans = [
   {
     id: 'monthly',
+    category: 'standard',
     title: 'Monthly Debit Order',
     badge: 'Save 3%',
-    badgeColor: '#2563eb',
+    badgeColor: palette.primary,
     amount: 'R 2,700',
-    period: 'per month',
-    features: ['Standard debit order', 'No upfront payment required', 'Predictable monthly budget'],
+    period: 'pm',
+    description: '10 monthly installments via debit order.',
   },
   {
     id: 'term',
+    category: 'standard',
     title: 'Pay Per Term',
-    badge: 'Save 3%',
-    badgeColor: '#2563eb',
+    badge: 'Popular',
+    badgeColor: '#10B981',
     amount: 'R 10,476',
     period: 'per term',
-    features: ['Pay 3 times per year', '3% discount on total fees', 'Aligned with school terms'],
+    description: 'Pay 3 times a year at start of term.',
   },
   {
     id: 'annual',
-    title: 'Pay Once Per Year',
+    category: 'standard',
+    title: 'Upfront Annual',
     badge: 'Best Value',
-    badgeColor: '#10b981',
-    badge2: 'Save 5%',
+    badgeColor: '#F59E0B',
     amount: 'R 30,780',
-    period: 'per year',
-    features: ['Maximum discount available', 'One payment, no worries', 'Save R 1,620 annually'],
+    period: 'once',
+    description: 'Single payment with 5% discount.',
   },
   {
     id: 'bnpl',
+    category: 'credit',
     title: 'Buy Now, Pay Later',
-    badge: '12% Cost',
-    badgeColor: '#6b7280',
+    badge: 'Flexible',
+    badgeColor: palette.textSecondary,
     amount: 'R 3,024',
-    period: 'per month',
-    features: ['Pay school fees immediately', 'Flexible repayment terms', '12% cost of credit applies'],
+    period: 'pm',
+    description: 'Immediate fee coverage. 12% cost of credit.',
   },
   {
     id: 'forward',
+    category: 'credit',
     title: 'Forward Funding',
-    badge: '15% Cost',
-    badgeColor: '#6b7280',
-    badge2: '6-12 months',
+    badge: 'Gap Cover',
+    badgeColor: palette.textSecondary,
     amount: 'R 3,105',
-    period: 'per month',
-    features: ['Cover funding gap', 'Quick approval process', '15% cost of credit applies'],
+    period: 'pm',
+    description: 'Covers funding gaps. 15% cost of credit.',
   },
   {
     id: 'sibling',
+    category: 'special',
     title: 'Sibling Benefit',
     badge: 'Save 10%',
-    badgeColor: '#2563eb',
-    badge2: 'Multiple children',
+    badgeColor: palette.primary,
     amount: 'R 2,430',
-    period: 'per child/month',
-    features: ['10% discount per additional child', 'Combined family billing', '1 children selected'],
+    period: 'pm',
+    description: 'Discount per child. Combined billing.',
   },
   {
     id: 'eft',
+    category: 'special',
     title: 'Pay via EFT',
-    badge: null,
+    badge: undefined,
+    badgeColor: undefined,
     amount: 'R 32,400',
-    period: 'per year',
-    features: ['Direct bank transfer', 'No intermediary fees', 'School instructions provided'],
+    period: 'year',
+    description: 'Direct bank transfer. No intermediary fees.',
   },
 ];
 
+const PlanItem = ({ plan, selected, onSelect }: PlanCardProps) => (
+    <Pressable 
+        style={[styles.planItem, selected && styles.planItemSelected]} 
+        onPress={onSelect}
+    >
+        <View style={styles.planItemLeft}>
+            <View style={[styles.radioBase, selected && styles.radioSelected]}>
+                {selected && <View style={styles.radioDot} />}
+            </View>
+        </View>
+        
+        <View style={styles.planItemCenter}>
+            <View style={styles.titleRow}>
+                 <Text style={styles.planItemTitle}>{plan.title}</Text>
+                 {plan.badge && (
+                    <View style={[styles.miniBadge, { backgroundColor: plan.badgeColor }]}>
+                        <Text style={styles.miniBadgeText}>{plan.badge}</Text>
+                    </View>
+                 )}
+            </View>
+            <Text style={styles.planItemDesc}>{plan.description}</Text>
+        </View>
+
+        <View style={styles.planItemRight}>
+             <Text style={styles.planItemAmount}>{plan.amount}</Text>
+             <Text style={styles.planItemPeriod}>{plan.period}</Text>
+        </View>
+    </Pressable>
+);
+
+const PlanGroup = ({ title, plans, selectedPlanId, onSelect }: any) => (
+    <View style={styles.groupContainer}>
+        <Text style={styles.groupTitle}>{title}</Text>
+        <View style={styles.groupList}>
+            {plans.map((plan: any) => (
+                <PlanItem 
+                    key={plan.id} 
+                    plan={plan} 
+                    selected={selectedPlanId === plan.id} 
+                    onSelect={() => onSelect(plan.id)}
+                />
+            ))}
+        </View>
+    </View>
+);
+
+
 export default function Step4Financing() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isSmall = width < 480;
-  const isMedium = width < 768;
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const slideAnim = React.useRef(new Animated.Value(-300)).current;
-
-  React.useEffect(() => {
-    Animated.timing(slideAnim, {
-      toValue: menuOpen ? 0 : -300,
-      duration: 350,
-      useNativeDriver: false,
-    }).start();
-  }, [menuOpen, slideAnim]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const handleLogout = () => {
-    router.push('/(tabs)' as never);
+    router.replace('/(tabs)' as never);
   };
 
   const handleContinue = () => {
-    if (!selectedPlan) {
-      alert('Please select a payment plan');
-      return;
-    }
-    router.push('/re-registration/step5-declaration' as never);
+      if (!selectedPlanId) {
+          alert("Please select a financing plan to continue.");
+          return;
+      }
+      router.push('/re-registration/step5-declaration' as never);
   };
 
+  const totalFee = mockStudents.reduce((acc, s) => {
+      const amount = parseInt(s.annualFees.replace(/[^0-9]/g, ''));
+      return acc + amount;
+  }, 0);
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
+
+      {/* Top Nav */}
+      <View style={styles.topNav}>
+        <Pressable 
+            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
+            onPress={() => setMenuOpen(true)}
+        >
+          <Ionicons name="menu" size={24} color={palette.text} />
         </Pressable>
       </View>
 
-      {/* Dropdown Menu - Slide from left */}
-      {menuOpen && (
-        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />
-      )}
-      <Animated.View style={[styles.dropdownMenu, { transform: [{ translateX: slideAnim }] }]}>
-        <View style={styles.menuHeader}>
-          <Text style={styles.menuTitle}>Menu</Text>
-          <Pressable onPress={() => setMenuOpen(false)}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </Pressable>
-        </View>
-        
-        <View style={styles.menuDivider} />
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/re-registration' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📝</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Re-registration</Text>
-            <Text style={styles.dropdownSubtext}>Register learners</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/fee-forecasting' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📊</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Fee Forecasting</Text>
-            <Text style={styles.dropdownSubtext}>Budget planning</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/ai-assistant' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>🤖</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>AI Assistant</Text>
-            <Text style={styles.dropdownSubtext}>Get smart help</Text>
-          </View>
-        </Pressable>
-        
-        <Pressable style={styles.dropdownItem} onPress={() => {
-          setMenuOpen(false);
-          router.push('/request-statement' as never);
-        }}>
-          <Text style={styles.dropdownIcon}>📋</Text>
-          <View style={styles.itemContent}>
-            <Text style={styles.dropdownText}>Request Statement</Text>
-            <Text style={styles.dropdownSubtext}>Download records</Text>
-          </View>
-        </Pressable>
-      </Animated.View>
+      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.mainTitle}>Student Re-Registration 2024</Text>
-        <Text style={styles.subtitle}>Complete the re-registration process for the upcoming academic year</Text>
-
-        <View style={[styles.contentRow, isMedium && styles.contentColumn]}>
-          {/* Sidebar */}
-          {isMedium ? (
-            <ProgressTracker steps={steps} currentStep={3} completion={75} compact={true} />
-          ) : (
-            <View style={styles.sidebar}>
-              <ProgressTracker steps={steps} currentStep={3} completion={75} />
-            </View>
-          )}
-
-          {/* Main Content */}
-          <View style={[styles.mainContent, isMedium && styles.mainContentMobile]}>
-            {/* Affordability Assessment */}
-            <View style={styles.assessmentCard}>
-              <View style={styles.assessmentHeader}>
-                <Text style={styles.assessmentTitle}>Affordability Assessment</Text>
-                <View style={styles.recommendedBadge}>
-                  <Text style={styles.recommendedText}>Financing Recommended</Text>
-                </View>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          {/* Header */}
+          <View style={styles.headerContainer}>
+              <View style={styles.headerIconBox}>
+                  <Ionicons name="wallet-outline" size={24} color={palette.primary} />
               </View>
-              <View style={styles.metricsRow}>
-                <View style={styles.metric}>
-                  <Text style={styles.metricLabel}>Annual School Fees</Text>
-                  <Text style={styles.metricValue}>R 32,400</Text>
-                </View>
-                <View style={styles.metric}>
-                  <Text style={styles.metricLabel}>Available Disposable Income</Text>
-                  <Text style={styles.metricValue}>R 65,000</Text>
-                </View>
-                <View style={styles.metric}>
-                  <Text style={styles.metricLabel}>Funding Gap</Text>
-                  <Text style={styles.metricValue}>R 0</Text>
-                </View>
+              <View>
+                  <Text style={styles.headerTitle}>School Fees</Text>
+                  <Text style={styles.headerSubtitle}>Choose your payment terms</Text>
               </View>
-              <View style={styles.ratioSection}>
-                <Text style={styles.ratioLabel}>Fee-to-Income Ratio</Text>
-                <Text style={styles.ratioValue}>50%</Text>
-                <View style={styles.ratioBar}>
-                  <View style={[styles.ratioSegment, styles.ratioComfortable, { width: '50%' }]} />
-                  <View style={[styles.ratioSegment, styles.ratioManageable]} />
-                  <View style={[styles.ratioSegment, styles.ratioChallenging]} />
-                </View>
-                <View style={styles.ratioLabels}>
-                  <Text style={styles.ratioLabelText}>Comfortable (0-50%)</Text>
-                  <Text style={styles.ratioLabelText}>Manageable (50-70%)</Text>
-                  <Text style={styles.ratioLabelText}>Challenging (70%+)</Text>
-                </View>
-              </View>
-            </View>
+          </View>
 
-            {/* Financing Options */}
-            <Text style={styles.sectionTitle}>Available Financing Options</Text>
-            <View style={[styles.plansGrid, isSmall && styles.plansGridMobile]}>
-              {financingPlans.map((plan) => (
-                <Pressable
-                  key={plan.id}
-                  style={[
-                    styles.planCard,
-                    isSmall && styles.planCardMobile,
-                    selectedPlan === plan.id && styles.planCardSelected,
-                  ]}
-                  onPress={() => setSelectedPlan(plan.id)}>
-                  {selectedPlan === plan.id && (
-                    <View style={styles.selectedBadge}>
-                      <Text style={styles.selectedBadgeText}>✓ Selected</Text>
-                    </View>
-                  )}
-                  <View style={styles.planHeader}>
-                    <Text style={styles.planTitle}>{plan.title}</Text>
-                    {plan.badge && (
-                      <View style={[styles.planBadge, { backgroundColor: plan.badgeColor }]}>
-                        <Text style={styles.planBadgeText}>{plan.badge}</Text>
-                      </View>
-                    )}
+          {/* Affordability Summary */}
+          <View style={styles.summaryCard}>
+              <View style={styles.summaryHeader}>
+                  <Text style={styles.summaryTitle}>Total Annual Fees</Text>
+                  <Text style={styles.summaryAmount}>R {totalFee.toLocaleString()}</Text>
+              </View>
+              
+              <View style={styles.ratioBarContainer}>
+                  <View style={styles.ratioLabels}>
+                      <Text style={styles.ratioText}>Affordability Check</Text>
+                      <Text style={[styles.ratioText, { color: palette.success }]}>Good</Text>
                   </View>
-                  {plan.badge2 && (
-                    <View style={styles.planBadge2}>
-                      <Text style={styles.planBadge2Text}>{plan.badge2}</Text>
-                    </View>
-                  )}
-                  <Text style={styles.planAmount}>{plan.amount}</Text>
-                  <Text style={styles.planPeriod}>{plan.period}</Text>
-                  <View style={styles.planFeatures}>
-                    {plan.features.map((feature, idx) => (
-                      <View key={idx} style={styles.planFeature}>
-                        <Text style={styles.planFeatureIcon}>✓</Text>
-                        <Text style={styles.planFeatureText}>{feature}</Text>
-                      </View>
-                    ))}
+                  <View style={styles.ratioTrack}>
+                      <View style={[styles.ratioFill, { width: '35%' }]} />
                   </View>
-                  <Pressable
-                    style={[
-                      styles.selectPlanBtn,
-                      selectedPlan === plan.id && styles.selectPlanBtnSelected,
-                    ]}
-                    onPress={() => setSelectedPlan(plan.id)}>
-                    <Text
-                      style={[
-                        styles.selectPlanBtnText,
-                        selectedPlan === plan.id && styles.selectPlanBtnTextSelected,
-                      ]}>
-                      {selectedPlan === plan.id ? 'Selected' : 'Select Plan'}
-                    </Text>
-                  </Pressable>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Navigation */}
-            <View style={styles.navButtons}>
-              <Pressable style={styles.backBtnNav} onPress={() => router.back()}>
-                <Text style={styles.backBtnText}>Previous</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.continueBtn, !selectedPlan && styles.continueBtnDisabled]}
-                onPress={handleContinue}>
-                <Text style={styles.continueBtnText}>Continue</Text>
-              </Pressable>
-            </View>
+                  <Text style={styles.ratioHelper}>Fees are approx. 12% of reported income</Text>
+              </View>
           </View>
+
+         {/* Steps Indicator */}
+         <View style={styles.stepsCard}>
+            <Text style={styles.sectionHeaderTitle}>Registration Steps</Text>
+            <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.stepsScrollContent}
+            >
+                {/* Step 1 */}
+                <View style={styles.stepItemCompleted}>
+                    <Ionicons name="checkmark-circle" size={20} color={palette.success} />
+                    <Text style={styles.stepTextCompleted}>Children</Text>
+                </View>
+                <View style={styles.stepDivider} />
+                {/* Step 2 */}
+                <View style={styles.stepItemCompleted}>
+                    <Ionicons name="checkmark-circle" size={20} color={palette.success} />
+                    <Text style={styles.stepTextCompleted}>Details</Text>
+                </View>
+                <View style={styles.stepDivider} />
+                {/* Step 3 */}
+                <View style={styles.stepItemActive}>
+                    <View style={styles.stepCircleActive}>
+                            <Text style={styles.stepNumberActive}>3</Text>
+                    </View>
+                    <Text style={styles.stepTextActive}>Financing</Text>
+                </View>
+                <View style={styles.stepDivider} />
+                {/* Step 4 */}
+                <View style={styles.stepItemInactive}>
+                    <Text style={styles.stepNumberInactive}>4</Text>
+                    <Text style={styles.stepTextInactive}>Confirm</Text>
+                </View>
+            </ScrollView>
         </View>
+
+        {/* Global Plan Selection */}
+        <Text style={styles.listTitle}>Select Payment Plan</Text>
+        <Text style={styles.listSubtitle}>This plan will apply to all students listed above.</Text>
+        
+        <View style={styles.plansList}>
+            <PlanGroup 
+                title="Standard Payment Terms"
+                plans={financingPlans.filter(p => p.category === 'standard')}
+                selectedPlanId={selectedPlanId}
+                onSelect={setSelectedPlanId}
+            />
+            <PlanGroup 
+                title="Credit & Financing"
+                plans={financingPlans.filter(p => p.category === 'credit')}
+                selectedPlanId={selectedPlanId}
+                onSelect={setSelectedPlanId}
+            />
+            <PlanGroup 
+                title="Other Arrangements"
+                plans={financingPlans.filter(p => p.category === 'special')}
+                selectedPlanId={selectedPlanId}
+                onSelect={setSelectedPlanId}
+            />
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footerRow}>
+            <Pressable 
+                style={({pressed}) => [styles.cancelBtn, pressed && styles.pressedBtn]}
+                onPress={() => router.back()}
+            >
+                <Text style={styles.cancelBtnText}>Back</Text>
+            </Pressable>
+            
+            <Pressable
+                style={({pressed}) => [styles.continueBtn, pressed && styles.pressedBtn]}
+                onPress={handleContinue}
+            >
+                <Text style={styles.continueBtnText}>Review & Submit →</Text>
+            </Pressable>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: palette.background },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
-  },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  hamburgerIcon: { fontSize: 24, color: palette.text },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  logoBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoLetter: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  brandTitle: { color: palette.text, fontSize: 15, fontWeight: '700' },
-  brandSubtitle: { color: palette.muted, fontSize: 11 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    justifyContent: 'center',
-  },
-  logoutIcon: { fontSize: 18, color: '#dc2626' },
-  logoutText: { color: '#dc2626', fontWeight: '600', fontSize: 12 },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 999,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1000,
-    borderRightWidth: 1,
-    borderRightColor: palette.border,
-  },
-  menuHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-  },
-  menuTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  closeIcon: { fontSize: 20, color: palette.text },
-  menuDivider: { height: 1, backgroundColor: palette.border },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
-    gap: 12,
-  },
-  dropdownIcon: { fontSize: 20 },
-  itemContent: { flex: 1 },
-  dropdownText: { fontSize: 14, fontWeight: '600', color: palette.text },
-  dropdownSubtext: { fontSize: 12, color: palette.muted, marginTop: 2 },
-  brandSubtitle: { color: palette.muted, fontSize: 11 },
-  container: { padding: 16, paddingTop: 24, paddingBottom: 32 },
-  mainTitle: { fontSize: 24, fontWeight: '800', color: palette.text, marginBottom: 4 },
-  subtitle: { fontSize: 14, color: palette.muted, marginBottom: 20 },
-  contentRow: { flexDirection: 'row', gap: 16 },
-  contentColumn: { flexDirection: 'column' },
-  sidebar: { width: 200, flexShrink: 0 },
-  mainContent: { flex: 1, minWidth: 0 },
-  mainContentMobile: { width: '100%' },
-  assessmentCard: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
-  assessmentHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  assessmentTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  recommendedBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  recommendedText: { fontSize: 11, fontWeight: '700', color: '#92400e' },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
-  },
-  metric: { flex: 1 },
-  metricLabel: { fontSize: 12, color: palette.muted, marginBottom: 4 },
-  metricValue: { fontSize: 18, fontWeight: '700', color: palette.text },
-  ratioSection: { marginTop: 16 },
-  ratioLabel: { fontSize: 13, fontWeight: '600', color: palette.text, marginBottom: 4 },
-  ratioValue: { fontSize: 20, fontWeight: '700', color: palette.primary, marginBottom: 8 },
-  ratioBar: {
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#e5e7eb',
-    flexDirection: 'row',
-    marginBottom: 8,
-    overflow: 'hidden',
-  },
-  ratioSegment: { height: '100%' },
-  ratioComfortable: { backgroundColor: palette.success },
-  ratioManageable: { flex: 1, backgroundColor: '#fbbf24' },
-  ratioChallenging: { flex: 1, backgroundColor: '#ef4444' },
-  ratioLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  ratioLabelText: { fontSize: 10, color: palette.muted },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: palette.text,
-    marginBottom: 16,
-  },
-  plansGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    marginBottom: 24,
-    justifyContent: 'space-between',
-  },
-  plansGridMobile: {
-    gap: 12,
-    justifyContent: 'flex-start',
-  },
-  plansColumn: { flexDirection: 'column' },
-  planCard: {
-    width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: palette.border,
-    marginBottom: 0,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 2,
-  },
-  planCardMobile: {
-    width: '100%',
-  },
-  planCardSelected: {
-    borderColor: palette.primary,
-    backgroundColor: '#f0f7ff',
-    borderWidth: 2.5,
-    shadowColor: palette.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-  },
-  selectedBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: palette.success,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    shadowColor: palette.success,
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-  },
-  selectedBadgeText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  planHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  planTitle: { fontSize: 15, fontWeight: '700', color: palette.text, flex: 1 },
-  planBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginLeft: 8,
-  },
-  planBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  planBadge2: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e5e7eb',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  planBadge2Text: { fontSize: 10, fontWeight: '600', color: palette.muted },
-  planAmount: { fontSize: 24, fontWeight: '800', color: palette.text, marginBottom: 4 },
-  planPeriod: { fontSize: 13, color: palette.muted, marginBottom: 12 },
-  planFeatures: { marginBottom: 12 },
-  planFeature: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  planFeatureIcon: { color: palette.success, fontSize: 14, marginRight: 8 },
-  planFeatureText: { fontSize: 12, color: palette.text, flex: 1 },
-  selectPlanBtn: {
-    backgroundColor: palette.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12,
-    borderWidth: 2,
-    borderColor: palette.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  selectPlanBtnSelected: {
-    backgroundColor: palette.primary,
-    borderColor: palette.primary,
-  },
-  selectPlanBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  selectPlanBtnTextSelected: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  navButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginTop: 24,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: palette.border,
-  },
-  backBtnNav: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: palette.border,
+  safeArea: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: palette.background,
   },
-  backBtnText: { color: palette.text, fontWeight: '700', fontSize: 14, textAlign: 'center' },
-  continueBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+  topNav: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
   },
-  continueBtnDisabled: {
-    backgroundColor: palette.muted,
-    opacity: 0.5,
+  menuBtn: {
+      padding: 8,
+      alignSelf: 'flex-start',
+      borderRadius: 8,
+      backgroundColor: '#fff',
+      borderWidth: 1,
+      borderColor: palette.border,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
   },
-  continueBtnText: { color: '#fff', fontWeight: '700', fontSize: 14, textAlign: 'center' },
-});
+  pressedBtn: { opacity: 0.8 },
+  scrollContent: { padding: 16, paddingBottom: 40 },
 
+  // Header
+  headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 20,
+      marginTop: 8,
+  },
+  headerIconBox: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: palette.primaryLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+  },
+  headerTitle: { fontSize: 20, fontWeight: '700', color: palette.text },
+  headerSubtitle: { fontSize: 14, color: palette.textSecondary },
+
+  // Summary Card
+  summaryCard: {
+      backgroundColor: palette.text, // Dark card
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 24,
+      shadowColor: palette.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 10,
+      elevation: 5,
+  },
+  summaryHeader: {
+      marginBottom: 20,
+  },
+  summaryTitle: { fontSize: 13, color: palette.textMuted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryAmount: { fontSize: 32, fontWeight: '700', color: '#fff' },
+  
+  ratioBarContainer: { gap: 8 },
+  ratioLabels: { flexDirection: 'row', justifyContent: 'space-between' },
+  ratioText: { fontSize: 12, fontWeight: '600', color: '#fff' },
+  ratioTrack: { height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' },
+  ratioFill: { height: '100%', backgroundColor: palette.success, borderRadius: 3 },
+  ratioHelper: { fontSize: 11, color: palette.textMuted, marginTop: 4 },
+
+  // Steps
+  stepsCard: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 32,
+      shadowColor: palette.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+  },
+  sectionHeaderTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: palette.textSecondary,
+      marginBottom: 16,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+  },
+  stepsScrollContent: { flexDirection: 'row', alignItems: 'center' },
+  stepItemCompleted: { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: 0.6 },
+  stepTextCompleted: { fontSize: 13, fontWeight: '600', color: palette.text, textDecorationLine: 'line-through' },
+  stepItemActive: {
+      flexDirection: 'row', alignItems: 'center', backgroundColor: palette.primaryLight,
+      paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, gap: 8,
+  },
+  stepCircleActive: {
+      width: 20, height: 20, borderRadius: 10, backgroundColor: palette.primary,
+      justifyContent: 'center', alignItems: 'center',
+  },
+  stepNumberActive: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  stepTextActive: { fontSize: 13, fontWeight: '600', color: palette.primary },
+  stepItemInactive: { flexDirection: 'row', alignItems: 'center', gap: 6, opacity: 0.5 },
+  stepNumberInactive: {
+      width: 20, height: 20, borderRadius: 10, backgroundColor: palette.border,
+      textAlign: 'center', textAlignVertical: 'center', fontSize: 11, fontWeight: '600',
+      color: palette.textSecondary, overflow: 'hidden',
+  },
+  stepTextInactive: { fontSize: 13, color: palette.textSecondary },
+  stepDivider: { height: 1, width: 24, backgroundColor: palette.border, marginHorizontal: 8 },
+
+  // Students List
+  studentsListCard: {
+      backgroundColor: palette.card,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 32,
+      borderWidth: 1, borderColor: palette.border,
+  },
+  studentSimpleRow: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+      marginBottom: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: palette.background,
+  },
+  studentSimpleLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatarCircleSmall: {
+      width: 32, height: 32, borderRadius: 16, backgroundColor: palette.primaryLight,
+      justifyContent: 'center', alignItems: 'center',
+  },
+  avatarTextSmall: { fontSize: 12, fontWeight: '700', color: palette.primary },
+  studentNameSimple: { fontSize: 14, fontWeight: '600', color: palette.text },
+  studentGradeSimple: { fontSize: 12, color: palette.textSecondary },
+  studentFeeSimple: { fontSize: 14, fontWeight: '600', color: palette.text },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 },
+  totalLabel: { fontSize: 14, fontWeight: '600', color: palette.textSecondary },
+  totalValue: { fontSize: 14, fontWeight: '700', color: palette.text },
+
+  // Plan Selection
+  listTitle: { fontSize: 16, fontWeight: '700', color: palette.text, marginBottom: 4 },
+  listSubtitle: { fontSize: 13, color: palette.textSecondary, marginBottom: 16 },
+  plansList: { gap: 16, marginBottom: 40 },
+  
+  // Plan Groups
+  groupContainer: { marginBottom: 24 },
+  groupTitle: { fontSize: 13, fontWeight: '700', color: palette.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  groupList: { backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: palette.border },
+
+  // Plan Item (Compact)
+  planItem: {
+      flexDirection: 'row', alignItems: 'center', padding: 16,
+      borderBottomWidth: 1, borderBottomColor: palette.border,
+      backgroundColor: '#fff',
+  },
+  planItemSelected: { backgroundColor: '#F5F7FF' },
+  planItemLeft: { marginRight: 12 },
+  radioBase: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: palette.border, justifyContent: 'center', alignItems: 'center' },
+  radioSelected: { borderColor: palette.primary },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: palette.primary },
+  
+  planItemCenter: { flex: 1, paddingRight: 8 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  planItemTitle: { fontSize: 14, fontWeight: '700', color: palette.text },
+  planItemDesc: { fontSize: 12, color: palette.textSecondary, lineHeight: 16 },
+  
+  planItemRight: { alignItems: 'flex-end', minWidth: 70 },
+  planItemAmount: { fontSize: 15, fontWeight: '700', color: palette.text },
+  planItemPeriod: { fontSize: 11, color: palette.textSecondary },
+
+  miniBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  miniBadgeText: { fontSize: 9, fontWeight: '700', color: '#fff' },
+
+  // Footer Buttons
+  footerRow: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 20,
+  },
+  cancelBtn: {
+      paddingVertical: 12, paddingHorizontal: 24, borderRadius: 26, borderWidth: 1, borderColor: palette.border, backgroundColor: '#fff',
+  },
+  cancelBtnText: { fontSize: 14, fontWeight: '600', color: palette.textSecondary },
+  continueBtn: {
+      flex: 1, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 26, backgroundColor: palette.primary,
+      alignItems: 'center', shadowColor: palette.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+  },
+  continueBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+});
