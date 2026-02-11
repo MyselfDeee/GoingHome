@@ -14,7 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import SideMenu from '../../components/SideMenu';
+// import SideMenu from '../../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../../components/AppHeader';
 import SuccessModal from '@/components/re-registration/SuccessModal';
 
 // Consistent Palette
@@ -172,16 +173,14 @@ const StudentFormAccordion = ({ student, isOpen, onToggle }: StudentFormProps) =
 
 export default function Step2UpdateDetails() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
+  // const [menuOpen, setMenuOpen] = useState(false); // Handled by AppHeader
   
   // Track which student accordion is open (default to first)
   const [openStudentId, setOpenStudentId] = useState<string | null>('1');
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const handleLogout = () => {
-    router.replace('/(tabs)' as never);
-  };
+  // handleLogout handled by AppHeader
 
   const handleContinue = () => {
     // Logic to validate
@@ -192,17 +191,7 @@ export default function Step2UpdateDetails() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
       
-      {/* Top Nav */}
-      <View style={styles.topNav}>
-        <Pressable 
-            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
-            onPress={() => setMenuOpen(true)}
-        >
-          <Ionicons name="menu" size={24} color={palette.text} />
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+      <AppHeader />
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{flex: 1}}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

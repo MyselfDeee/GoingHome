@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, View, Pressable, Text, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import SideMenu from '../components/SideMenu';
+// import SideMenu from '../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../components/AppHeader';
 import NoticesScreen from '../components/NoticesScreen';
 
 const palette = {
@@ -16,35 +17,11 @@ const palette = {
 
 export default function AnnouncementsPage() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  // const [menuOpen, setMenuOpen] = React.useState(false); // Handled by AppHeader
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>K</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable
-          style={styles.logoutBtn}
-          onPress={() => {
-            router.push('/(tabs)' as never);
-          }}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={() => router.push('/(tabs)' as never)} />
+      <AppHeader />
 
       {/* Notices Component */}
       <NoticesScreen />

@@ -2,7 +2,8 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import SideMenu from '../components/SideMenu';
+// import SideMenu from '../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../components/AppHeader';
 
 interface AdmissionApplication {
   id: string;
@@ -56,7 +57,7 @@ export default function AdmissionsScreen() {
   const isSmall = width < 480;
   const [application, setApplication] = React.useState<AdmissionApplication | null>(sampleApplication);
   const [loading, setLoading] = React.useState(false);
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  // const [menuOpen, setMenuOpen] = React.useState(false); // Handled by AppHeader
 
   React.useEffect(() => {
     // Simulate fetching admissions data
@@ -95,31 +96,8 @@ export default function AdmissionsScreen() {
   if (!application) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        {/* Top Bar */}
-        <View style={styles.topBar}>
-          <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-            <Text style={styles.hamburgerIcon}>☰</Text>
-          </Pressable>
-          <View style={styles.logoRow}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoLetter}>K</Text>
-            </View>
-            <View>
-              <Text style={styles.brandTitle}>Knit Edu</Text>
-              <Text style={styles.brandSubtitle}>Parent Portal</Text>
-            </View>
-          </View>
-          <Pressable
-            style={styles.logoutBtn}
-            onPress={() => {
-              router.push('/(tabs)' as never);
-            }}>
-            <Text style={styles.logoutIcon}>⏻</Text>
-            <Text style={styles.logoutText}>Logout</Text>
-          </Pressable>
-        </View>
-
-        <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={() => router.push('/(tabs)' as never)} />
+        <AppHeader />
+        
         <View style={styles.emptyStateContainer}>
           <Text style={styles.emptyStateIcon}>📭</Text>
           <Text style={styles.emptyStateTitle}>No Active Applications</Text>
@@ -141,31 +119,7 @@ export default function AdmissionsScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>K</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable
-          style={styles.logoutBtn}
-          onPress={() => {
-            router.push('/(tabs)' as never);
-          }}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={() => router.push('/(tabs)' as never)} />
+      <AppHeader />
 
       <ScrollView
         contentContainerStyle={[styles.container, isSmall && styles.containerSmall]}

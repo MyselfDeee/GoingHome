@@ -1,281 +1,366 @@
 import React from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import SideMenu from '../components/SideMenu';
+import { Ionicons } from '@expo/vector-icons';
+import AppHeader from '../components/AppHeader';
 
+// Modern Palette 2026 (Indigo/Slate)
 const palette = {
-  background: '#f5f7fb',
-  card: '#ffffff',
-  border: '#e5e7eb',
-  primary: '#1f64f2',
-  success: '#1db954',
-  danger: '#f87171',
-  muted: '#6b7280',
-  text: '#1f2937',
+  background: '#F9FAFC',
+  card: '#FFFFFF',
+  text: '#1E293B',
+  textSecondary: '#64748B', 
+  textMuted: '#94A3B8',
+  primary: '#6366F1',
+  primaryLight: '#EEF2FF',
+  primaryDark: '#4338CA',
+  border: '#E2E8F0',
+  success: '#10B981',
+  warningBg: '#FFFBEB',
+  warningBorder: '#FCD34D',
+  warningText: '#B45309',
+  shadow: '#0F172A',
 };
 
 export default function RequestStatement() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = React.useState(false);
-
-  const handleLogout = () => {
-    router.push('/(tabs)' as never);
-  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Request Statement</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
-        </Pressable>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
+      
+      <AppHeader />
 
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
-
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Page Header */}
-        <View style={styles.pageHeader}>
-          <Text style={styles.pageTitle}>Request Statement</Text>
-          <Text style={styles.pageSubtitle}>Download your financial records</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Header Section */}
+        <View style={styles.headerCard}>
+            <View style={styles.headerTopRow}>
+                <View style={styles.headerTitleRow}>
+                    <View style={styles.headerIconBox}>
+                        <Ionicons name="document-text-outline" size={24} color={palette.primary} />
+                    </View>
+                    <Text style={styles.headerTitle}>Statements & Reports</Text>
+                </View>
+            </View>
+            <View style={styles.headerDivider} />
+            <Text style={styles.headerSubtitle}>Financial Records</Text>
+            <Text style={styles.headerDescription}>
+                Access and download your official account statements and payment history.
+            </Text>
         </View>
 
-        {/* Content Card */}
-        <View style={styles.card}>
-          <View style={styles.cardIcon}>
-            <Text style={styles.largeIcon}>📋</Text>
+        {/* Hero Action Card */}
+        <View style={styles.mainCard}>
+          <View style={styles.heroHeader}>
+            <View style={styles.heroIconContainer}>
+                <Ionicons name="cloud-download-outline" size={28} color={palette.primary} />
+            </View>
+            <View style={{flex: 1}}>
+                <Text style={styles.mainCardTitle}>Account Statement</Text>
+                <Text style={styles.mainCardDescription}>
+                    Generating a statement includes all transactions, payments, and outstanding balances to date.
+                </Text>
+            </View>
           </View>
-          <Text style={styles.cardTitle}>Account Statement</Text>
-          <Text style={styles.cardDescription}>
-            Request and download official statements for your account. Statements include payment history, balances, and transaction details.
-          </Text>
-          <Pressable style={styles.actionBtn}>
-            <Text style={styles.actionBtnText}>Request Statement</Text>
+
+          <View style={styles.mainCardDivider} />
+          
+          <Pressable style={({pressed}) => [styles.actionBtn, pressed && styles.actionBtnPressed]}>
+            <Text style={styles.actionBtnText}>Generate Statement</Text>
+            <Ionicons name="arrow-forward" size={18} color="#fff" />
           </Pressable>
         </View>
 
-        <View style={styles.optionsCard}>
-          <Text style={styles.optionsTitle}>Statement Options</Text>
-          <View style={styles.option}>
-            <View style={styles.optionIcon}>
-              <Text>📄</Text>
-            </View>
-            <View style={styles.optionContent}>
-              <Text style={styles.optionName}>PDF Format</Text>
-              <Text style={styles.optionDesc}>Download as PDF file</Text>
-            </View>
-            <Text style={styles.optionArrow}>→</Text>
+        {/* Options List */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+             <Text style={styles.sectionTitle}>Delivery Options</Text>
+             <Ionicons name="options-outline" size={18} color={palette.textSecondary} />
           </View>
-          <View style={styles.option}>
-            <View style={styles.optionIcon}>
-              <Text>📧</Text>
-            </View>
-            <View style={styles.optionContent}>
-              <Text style={styles.optionName}>Email Statement</Text>
-              <Text style={styles.optionDesc}>Send to your email</Text>
-            </View>
-            <Text style={styles.optionArrow}>→</Text>
-          </View>
-          <View style={styles.option}>
-            <View style={styles.optionIcon}>
-              <Text>📱</Text>
-            </View>
-            <View style={styles.optionContent}>
-              <Text style={styles.optionName}>SMS Receipt</Text>
-              <Text style={styles.optionDesc}>Send to your phone</Text>
-            </View>
-            <Text style={styles.optionArrow}>→</Text>
+          
+          <View style={styles.optionsList}>
+             {/* PDF Option */}
+             <Pressable style={({pressed}) => [styles.optionRow, pressed && styles.optionPressed]}>
+                <View style={[styles.optionIconBox, { backgroundColor: '#F1F5F9' }]}>
+                    <Ionicons name="document-outline" size={20} color={palette.text} />
+                </View>
+                <View style={styles.optionContent}>
+                    <Text style={styles.optionName}>Download PDF</Text>
+                    <Text style={styles.optionDesc}>Save directly to your device</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={palette.textMuted} />
+             </Pressable>
+
+             {/* Email Option */}
+             <Pressable style={({pressed}) => [styles.optionRow, pressed && styles.optionPressed]}>
+                <View style={[styles.optionIconBox, { backgroundColor: palette.primaryLight }]}>
+                    <Ionicons name="mail-outline" size={20} color={palette.primary} />
+                </View>
+                <View style={styles.optionContent}>
+                    <Text style={styles.optionName}>Email Statement</Text>
+                    <Text style={styles.optionDesc}>Send to registered email address</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={palette.textMuted} />
+             </Pressable>
+
+             {/* SMS Option */}
+             <Pressable style={({pressed}) => [styles.lastOptionRow, pressed && styles.optionPressed]}>
+                <View style={[styles.optionIconBox, { backgroundColor: '#F0FDF4' }]}>
+                    <Ionicons name="chatbubble-outline" size={20} color={palette.success} />
+                </View>
+                <View style={styles.optionContent}>
+                    <Text style={styles.optionName}>SMS Summary</Text>
+                    <Text style={styles.optionDesc}>Get a text with your balance</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={palette.textMuted} />
+             </Pressable>
           </View>
         </View>
 
+        {/* Info Box */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Processing Time</Text>
-          <Text style={styles.infoText}>
-            Statements are typically processed within 24 hours. You'll receive a notification once your statement is ready.
-          </Text>
+            <View style={styles.infoIconBox}>
+                <Ionicons name="time-outline" size={20} color={palette.warningText} />
+            </View>
+            <View style={{flex: 1}}>
+                <Text style={styles.infoTitle}>Processing Time</Text>
+                <Text style={styles.infoText}>
+                    Statements are typically processed within 24 hours. You'll receive a notification once ready.
+                </Text>
+            </View>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: palette.background },
-  topBar: {
+  safeArea: {
+    flex: 1,
+    backgroundColor: palette.background,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+    gap: 20,
+  },
+  
+  // Header Card
+  headerCard: {
+    backgroundColor: palette.card,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: palette.border,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
     gap: 12,
   },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
+  headerIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: palette.primaryLight,
     alignItems: 'center',
-  },
-  hamburgerIcon: { fontSize: 24, color: palette.text },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  logoBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoLetter: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  brandTitle: { color: palette.text, fontSize: 15, fontWeight: '700' },
-  brandSubtitle: { color: palette.muted, fontSize: 11 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
     justifyContent: 'center',
   },
-  logoutIcon: { fontSize: 18, color: '#dc2626' },
-  logoutText: { color: '#dc2626', fontWeight: '600', fontSize: 12 },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 999,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1000,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    shadowOffset: { width: 3, height: 0 },
-    paddingTop: 20,
-  },
-  menuHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  menuTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
     color: palette.text,
   },
-  closeIcon: {
-    fontSize: 24,
-    color: palette.muted,
-    fontWeight: '600',
-  },
-  menuDivider: {
+  headerDivider: {
     height: 1,
     backgroundColor: palette.border,
-    marginHorizontal: 16,
-    marginVertical: 8,
+    marginBottom: 16,
   },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginHorizontal: 10,
+  headerSubtitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: palette.primary,
+    textTransform: 'uppercase',
     marginBottom: 4,
-    borderRadius: 10,
-    backgroundColor: '#f8f9fa',
-    gap: 14,
+    letterSpacing: 0.5,
   },
-  dropdownIcon: { fontSize: 28 },
-  itemContent: {
-    flex: 1,
+  headerDescription: {
+    fontSize: 14,
+    color: palette.textSecondary,
+    lineHeight: 20,
+  },
+
+  // Main Card
+  mainCard: {
+    backgroundColor: palette.card,
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: palette.border,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 8,
+  },
+  heroIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: palette.primaryLight,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  dropdownText: { fontSize: 15, fontWeight: '700', color: palette.text },
-  dropdownSubtext: { fontSize: 12, color: palette.muted, marginTop: 2 },
-  container: { padding: 16, gap: 16 },
-  pageHeader: { marginBottom: 8 },
-  pageTitle: { fontSize: 22, fontWeight: '800', color: palette.text },
-  pageSubtitle: { color: palette.muted, fontSize: 12, marginTop: 2 },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: palette.border,
-    alignItems: 'center',
-    gap: 12,
+  mainCardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: palette.text,
+    marginBottom: 6,
   },
-  cardIcon: { marginBottom: 8 },
-  largeIcon: { fontSize: 48 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: palette.text },
-  cardDescription: { fontSize: 13, color: palette.muted, textAlign: 'center', lineHeight: 20 },
+  mainCardDescription: {
+    fontSize: 14,
+    color: palette.textSecondary,
+    lineHeight: 22,
+  },
+  mainCardDivider: {
+    height: 1,
+    backgroundColor: palette.border,
+    marginVertical: 20,
+  },
   actionBtn: {
     backgroundColor: palette.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 8,
-    width: '100%',
-  },
-  actionBtnText: { color: '#fff', fontWeight: '600', fontSize: 14, textAlign: 'center' },
-  optionsCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: palette.border,
-    gap: 12,
-  },
-  optionsTitle: { fontSize: 14, fontWeight: '700', color: palette.text, marginBottom: 4 },
-  option: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+    shadowColor: palette.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  actionBtnPressed: {
+    transform: [{ scale: 0.98 }],
+    opacity: 0.9,
+  },
+  actionBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Options Section
+  sectionCard: {
+    backgroundColor: palette.card,
+    borderRadius: 20,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: palette.border,
+    overflow: 'hidden',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: palette.border,
-    gap: 12,
+    backgroundColor: '#F8FAFC',
   },
-  optionIcon: { fontSize: 24 },
-  optionContent: { flex: 1 },
-  optionName: { fontSize: 13, fontWeight: '600', color: palette.text },
-  optionDesc: { fontSize: 12, color: palette.muted, marginTop: 2 },
-  optionArrow: { fontSize: 16, color: palette.muted },
-  infoCard: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 12,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: palette.text,
+  },
+  optionsList: {
+    padding: 0,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#fcd34d',
+    borderBottomWidth: 1,
+    borderBottomColor: palette.border,
+    gap: 16,
   },
-  infoTitle: { fontSize: 13, fontWeight: '700', color: '#92400e', marginBottom: 6 },
-  infoText: { fontSize: 12, color: '#78350f', lineHeight: 18 },
+  lastOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 16,
+  },
+  optionPressed: {
+    backgroundColor: '#F1F5F9',
+  },
+  optionIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  optionContent: {
+    flex: 1,
+  },
+  optionName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: palette.text,
+  },
+  optionDesc: {
+    fontSize: 12,
+    color: palette.textSecondary,
+    marginTop: 2,
+  },
+
+  // Info Card
+  infoCard: {
+    backgroundColor: palette.warningBg,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: palette.warningBorder,
+  },
+  infoIconBox: {
+    marginTop: 2,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: palette.warningText,
+    marginBottom: 4,
+  },
+  infoText: {
+    fontSize: 13,
+    color: palette.warningText,
+    opacity: 0.9,
+    lineHeight: 18,
+  },
 });

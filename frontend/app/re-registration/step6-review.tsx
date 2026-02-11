@@ -10,8 +10,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+// import { useColorScheme } from '../../hooks/use-color-scheme'; // If AppHeader uses it internally or passes defaults
 import { useColorScheme } from '../../hooks/use-color-scheme';
-import SideMenu from '../../components/SideMenu';
+// import SideMenu from '../../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../../components/AppHeader';
 
 const lightPalette = {
   background: '#F6F8FC',
@@ -58,7 +60,7 @@ export default function Step6Review() {
     [colorScheme]
   );
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  // const [menuOpen, setMenuOpen] = useState(false); // Handled by AppHeader
   const [confirmed, setConfirmed] = useState(false);
 
   const handleComplete = () => {
@@ -73,16 +75,7 @@ export default function Step6Review() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.background }]} edges={['top', 'left', 'right']}>
       <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
 
-      <View style={styles.topNav}>
-        <Pressable
-          style={({ pressed }) => [styles.menuBtn, pressed && styles.pressedBtn, { borderColor: palette.border, backgroundColor: palette.card }]}
-          onPress={() => setMenuOpen(true)}
-        >
-          <Ionicons name="menu" size={22} color={palette.text} />
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={() => router.replace('/(tabs)' as never)} />
+      <AppHeader />
 
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: 150 }]} showsVerticalScrollIndicator={false}>
         <Text style={[styles.breadcrumb, { color: palette.textMuted }]}>Parent Portal · Re-Registration · Step 4: Review & Submit</Text>

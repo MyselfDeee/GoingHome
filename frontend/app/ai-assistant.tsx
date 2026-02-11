@@ -2,8 +2,9 @@ import React from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, View, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import SideMenu from '../components/SideMenu';
+// import SideMenu from '../components/SideMenu'; // Handled by AppHeader
 import { generateAIResponse } from '../utils/aiService';
+import AppHeader from '../components/AppHeader';
 
 const darkPalette = {
   background: '#0f172a',
@@ -33,19 +34,17 @@ const lightPalette = {
 
 export default function AIAssistant() {
   const router = useRouter();
-  const [isDarkTheme, setIsDarkTheme] = React.useState(true);
+  const [isDarkTheme, setIsDarkTheme] = React.useState(false); // Default to light to match app
   const palette = isDarkTheme ? darkPalette : lightPalette;
   const [messages, setMessages] = React.useState([
     { id: 1, text: 'Hello! I\'m your AI Assistant. How can I help you today?', sender: 'ai' },
   ]);
   const [input, setInput] = React.useState('');
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  // const [menuOpen, setMenuOpen] = React.useState(false); // Handled by AppHeader
   const [loading, setLoading] = React.useState(false);
   const dynamicStyles = createStyles(palette);
 
-  const handleLogout = () => {
-    router.push('/(tabs)' as never);
-  };
+  // handleLogout handled by AppHeader
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
@@ -71,29 +70,7 @@ export default function AIAssistant() {
     <SafeAreaView style={[dynamicStyles.safeArea, { backgroundColor: palette.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={dynamicStyles.flexContainer}>
         {/* Top Bar */}
-        <View style={dynamicStyles.topBar}>
-        <Pressable style={dynamicStyles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={dynamicStyles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={dynamicStyles.logoRow}>
-          <View style={dynamicStyles.logoBox}>
-            <Text style={dynamicStyles.logoLetter}>P</Text>
-          </View>
-          <View>
-            <Text style={dynamicStyles.brandTitle}>Knit Edu</Text>
-            <Text style={dynamicStyles.brandSubtitle}>AI Assistant</Text>
-          </View>
-        </View>
-        <Pressable style={dynamicStyles.themeBtn} onPress={() => setIsDarkTheme(!isDarkTheme)}>
-          <Text style={dynamicStyles.themeBtnIcon}>{isDarkTheme ? '☀️' : '🌙'}</Text>
-        </Pressable>
-        <Pressable style={dynamicStyles.logoutBtn} onPress={handleLogout}>
-          <Text style={dynamicStyles.logoutIcon}>⏻</Text>
-          <Text style={dynamicStyles.logoutText}>Logout</Text>
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+        <AppHeader />
 
       <ScrollView contentContainerStyle={dynamicStyles.messagesContainer} showsVerticalScrollIndicator={false}>
         {/* Page Header */}

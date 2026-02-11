@@ -12,7 +12,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import SideMenu from '../../components/SideMenu';
+// import SideMenu from '../../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../../components/AppHeader';
 
 // Consistent Palette
 const palette = {
@@ -68,7 +69,7 @@ const confirmationItems = [
 
 export default function Step5Declaration() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
+  // const [menuOpen, setMenuOpen] = useState(false); // Handled by AppHeader
   
   // State for checkboxes
   const [checkedState, setCheckedState] = useState<boolean[]>(
@@ -79,9 +80,7 @@ export default function Step5Declaration() {
   const [signatureName, setSignatureName] = useState('');
   const [city, setCity] = useState('');
   
-  const handleLogout = () => {
-    router.replace('/(tabs)' as never);
-  };
+  // handleLogout handled by AppHeader
 
   const toggleCheckbox = (index: number) => {
       const updated = [...checkedState];
@@ -109,17 +108,7 @@ export default function Step5Declaration() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
 
-      {/* Top Nav */}
-      <View style={styles.topNav}>
-        <Pressable 
-            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
-            onPress={() => setMenuOpen(true)}
-        >
-          <Ionicons name="menu" size={24} color={palette.text} />
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+      <AppHeader />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           

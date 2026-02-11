@@ -13,7 +13,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import SideMenu from '../../components/SideMenu';
+// import SideMenu from '../../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../../components/AppHeader';
 
 // Updated palette to match reference image (soft blues, clean whites, subtle shadows)
 const palette = {
@@ -46,7 +47,7 @@ const mockStudents = [
 export default function Step1SelectChildren() {
   const router = useRouter();
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [menuOpen, setMenuOpen] = useState(false);
+  // const [menuOpen, setMenuOpen] = useState(false); // Handled by AppHeader
 
   const toggleStudent = (id: string) => {
     setSelectedStudents((prev) =>
@@ -62,25 +63,13 @@ export default function Step1SelectChildren() {
     router.push('/re-registration/step2-update' as never);
   };
 
-  const handleLogout = () => {
-      router.replace('/(tabs)' as never);
-  };
+  // handleLogout handled by AppHeader
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
 
-      {/* Top Nav */}
-      <View style={styles.topNav}>
-        <Pressable 
-            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
-            onPress={() => setMenuOpen(true)}
-        >
-          <Ionicons name="menu" size={24} color={palette.text} />
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+      <AppHeader />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         

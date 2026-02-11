@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import SideMenu from '../components/SideMenu';
+// import SideMenu from '../components/SideMenu'; // SideMenu is handled in AppHeader now
+import AppHeader from '../components/AppHeader';
 import React from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View, Platform, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,7 +24,8 @@ const palette = {
 
 export default function ReRegistration() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = React.useState(false);
+  // State for menu is now handled in AppHeader
+  // const [menuOpen, setMenuOpen] = React.useState(false); 
   const buttonScaleAnim = React.useRef(new Animated.Value(1)).current;
 
   // Animation handlers
@@ -34,29 +36,13 @@ export default function ReRegistration() {
      Animated.spring(buttonScaleAnim, { toValue: 1, useNativeDriver: true }).start();
   };
 
-  const handleLogout = () => {
-    router.replace('/(tabs)' as never);
-  };
+  // Logout is handled in AppHeader
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
       
-      {/* 
-        Global Top Navigation (kept consistent with dashboard logic, 
-        but styled minimally to blend with the page) 
-      */}
-      <View style={styles.topNav}>
-        <Pressable 
-            style={({pressed}) => [styles.menuBtn, pressed && styles.menuBtnPressed]} 
-            onPress={() => setMenuOpen(true)}
-        >
-          <Ionicons name="menu" size={24} color={palette.text} />
-        </Pressable>
-        {/* Placeholder for center title or logo if needed, otherwise empty for clean look */}
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+      <AppHeader />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         

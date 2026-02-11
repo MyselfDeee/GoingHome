@@ -13,7 +13,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import SideMenu from '../../components/SideMenu';
+// import SideMenu from '../../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../../components/AppHeader';
 
 // Consistent Palette
 const palette = {
@@ -174,7 +175,7 @@ const PlanGroup = ({ title, plans, selectedPlanId, onSelect }: any) => (
 
 export default function Step4Financing() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
+  // const [menuOpen, setMenuOpen] = useState(false); // Handled by AppHeader
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const handleLogout = () => {
@@ -198,17 +199,7 @@ export default function Step4Financing() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
 
-      {/* Top Nav */}
-      <View style={styles.topNav}>
-        <Pressable 
-            style={({pressed}) => [styles.menuBtn, pressed && styles.pressedBtn]} 
-            onPress={() => setMenuOpen(true)}
-        >
-          <Ionicons name="menu" size={24} color={palette.text} />
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+      <AppHeader />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           

@@ -8,35 +8,40 @@ import {
   TextInput,
   Alert,
   useWindowDimensions,
-  Animated,
   ActivityIndicator,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import SideMenu from '../components/SideMenu';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { profileService } from '@/utils/profileService';
+import AppHeader from '../components/AppHeader';
 
+// Modern 2026 Palette (Indigo/Slate)
 const palette = {
-  background: '#f3f4f6',
-  card: '#ffffff',
-  border: '#e5e7eb',
-  primary: '#6366f1',
-  success: '#1db954',
-  danger: '#ef4444',
-  muted: '#6b7280',
-  text: '#1f2937',
-  textLight: '#6b7280',
-  badgeBlue: '#e5edff',
-  badgeRed: '#ffecec',
+  background: '#F9FAFC',
+  card: '#FFFFFF',
+  text: '#1E293B',
+  textSecondary: '#64748B', 
+  textMuted: '#94A3B8',
+  primary: '#6366F1',
+  primaryLight: '#EEF2FF',
+  primaryDark: '#4F46E5',
+  border: '#E2E8F0',
+  success: '#10B981',
+  danger: '#EF4444',
+  warningBg: '#FFFBEB',
+  warningText: '#B45309',
+  shadow: '#0F172A',
+  inputBg: '#F8FAFC',
 };
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { token, logout } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -152,22 +157,10 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel' },
-      {
-        text: 'Logout',
-        onPress: async () => {
-          await logout();
-          router.push('/(tabs)' as never);
-        },
-      },
-    ]);
-  };
-
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+        <AppHeader />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={palette.primary} />
           <Text style={styles.loadingText}>Loading profile...</Text>
@@ -177,259 +170,180 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <Pressable style={styles.hamburgerBtn} onPress={() => setMenuOpen(!menuOpen)}>
-          <Text style={styles.hamburgerIcon}>☰</Text>
-        </Pressable>
-        <View style={styles.logoRow}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoLetter}>K</Text>
-          </View>
-          <View>
-            <Text style={styles.brandTitle}>Knit Edu</Text>
-            <Text style={styles.brandSubtitle}>Parent Portal</Text>
-          </View>
-        </View>
-        <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutIcon}>⏻</Text>
-          <Text style={styles.logoutText}>Logout</Text>
-        </Pressable>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor={palette.background} />
+      
+      <AppHeader />
 
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
-
-      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Header Section */}
-        <View style={styles.headerSection}>
-          <Text style={styles.pageTitle}>Profile Settings</Text>
-          <Text style={styles.pageSubtitle}>Manage your personal information and account preferences</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Header Title Section */}
+        <View style={styles.headerTitleContainer}>
+            <Text style={styles.pageTitle}>Profile Settings</Text>
+            <Text style={styles.pageSubtitle}>Manage your personal information</Text>
         </View>
 
-        {/* Cover Banner Section */}
-        <View style={styles.coverSection}>
-          <View style={styles.coverBanner} />
-          <Pressable style={styles.changeCoverBtn}>
-            <Ionicons name="image" size={16} color="#ffffff" />
-            <Text style={styles.changeCoverText}>Change Cover</Text>
-          </Pressable>
-
-          {/* Profile Picture */}
-          <View style={styles.profilePictureContainer}>
-            <View style={styles.profilePicture}>
-              <Text style={styles.profileInitial}>
-                {formData.fullName.charAt(0).toUpperCase() || 'U'}
-              </Text>
-            </View>
-            <Pressable style={styles.changeProfilePicBtn}>
-              <Ionicons name="camera" size={14} color={palette.primary} />
-            </Pressable>
-          </View>
-          <Pressable>
-            <Text style={styles.changeProfilePicText}>Change Profile Picture</Text>
-          </Pressable>
-        </View>
-
-        {/* Main Card */}
-        <View style={styles.mainCard}>
-          {/* Personal Information Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>FULL NAME</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.fullName}
-              onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-              placeholder="Enter your full name"
-              placeholderTextColor={palette.muted}
-            />
-            <Text style={styles.helperText}>This name will be visible to teachers and administrators</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>EMAIL ADDRESS</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.email}
-              onChangeText={(text) => setFormData({ ...formData, email: text })}
-              placeholder="Enter your email"
-              keyboardType="email-address"
-              placeholderTextColor={palette.muted}
-            />
-            <Text style={styles.helperText}>Used for notifications and account recovery</Text>
-          </View>
-
-          <View style={styles.twoColumnSection}>
-            <View style={[styles.section, styles.flex1]}>
-              <Text style={styles.sectionTitle}>PHONE NUMBER</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.phone}
-                onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                placeholder="Enter your phone"
-                keyboardType="phone-pad"
-                placeholderTextColor={palette.muted}
-              />
-              <Text style={styles.helperText}>For urgent notifications and verification</Text>
-            </View>
-
-            <View style={[styles.section, styles.flex1]}>
-              <Text style={styles.sectionTitle}>LOCATION</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.location}
-                onChangeText={(text) => setFormData({ ...formData, location: text })}
-                placeholder="Enter your location"
-                placeholderTextColor={palette.muted}
-              />
-              <Text style={styles.helperText}>Optional: Your city and country</Text>
-            </View>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.divider} />
-
-          {/* Change Password Section */}
-          <View>
-            <View style={styles.passwordHeader}>
-              <Ionicons name="lock-closed" size={18} color={palette.text} />
-              <Text style={styles.passwordTitle}>Change Password</Text>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>CURRENT PASSWORD</Text>
-              <View style={styles.passwordInputContainer}>
-                <TextInput
-                  style={styles.passwordInput}
-                  value={passwordData.current}
-                  onChangeText={(text) => setPasswordData({ ...passwordData, current: text })}
-                  placeholder="Enter current password"
-                  secureTextEntry={!showPasswords.current}
-                  placeholderTextColor={palette.muted}
-                />
-                <Pressable
-                  onPress={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-                  style={styles.eyeIcon}>
-                  <Ionicons
-                    name={showPasswords.current ? 'eye' : 'eye-off'}
-                    size={20}
-                    color={palette.muted}
-                  />
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
+            <View style={styles.coverBanner} />
+            
+            <View style={styles.avatarContainer}>
+                <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                        {formData.fullName.charAt(0).toUpperCase() || 'U'}
+                    </Text>
+                </View>
+                <Pressable style={styles.editAvatarBtn}>
+                    <Ionicons name="camera-outline" size={16} color="#fff" />
                 </Pressable>
-              </View>
             </View>
 
-            <View style={styles.twoColumnSection}>
-              <View style={[styles.section, styles.flex1]}>
-                <Text style={styles.sectionTitle}>NEW PASSWORD</Text>
-                <View style={styles.passwordInputContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    value={passwordData.new}
-                    onChangeText={(text) => setPasswordData({ ...passwordData, new: text })}
-                    placeholder="Enter new password"
-                    secureTextEntry={!showPasswords.new}
-                    placeholderTextColor={palette.muted}
-                  />
-                  <Pressable
-                    onPress={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
-                    style={styles.eyeIcon}>
-                    <Ionicons
-                      name={showPasswords.new ? 'eye' : 'eye-off'}
-                      size={20}
-                      color={palette.muted}
-                    />
-                  </Pressable>
-                </View>
-              </View>
+            <View style={styles.profileInfoValues}>
+                <Text style={styles.profileNameDisplay}>{formData.fullName || 'User Name'}</Text>
+                <Text style={styles.profileRoleDisplay}>Guardian / Parent</Text>
+            </View>
+        </View>
 
-              <View style={[styles.section, styles.flex1]}>
-                <Text style={styles.sectionTitle}>CONFIRM PASSWORD</Text>
-                <View style={styles.passwordInputContainer}>
-                  <TextInput
-                    style={styles.passwordInput}
-                    value={passwordData.confirm}
-                    onChangeText={(text) => setPasswordData({ ...passwordData, confirm: text })}
-                    placeholder="Confirm new password"
-                    secureTextEntry={!showPasswords.confirm}
-                    placeholderTextColor={palette.muted}
-                  />
-                  <Pressable
-                    onPress={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
-                    style={styles.eyeIcon}>
-                    <Ionicons
-                      name={showPasswords.confirm ? 'eye' : 'eye-off'}
-                      size={20}
-                      color={palette.muted}
-                    />
-                  </Pressable>
-                </View>
-              </View>
+        {/* Personal Details Form */}
+        <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+                <Ionicons name="person-outline" size={20} color={palette.primary} />
+                <Text style={styles.sectionTitle}>Personal Details</Text>
+            </View>
+            <View style={styles.divider} />
+            
+            <View style={styles.formGroup}>
+                <Text style={styles.inputLabel}>Full Name</Text>
+                <TextInput
+                    style={styles.input}
+                    value={formData.fullName}
+                    onChangeText={(text) => setFormData({ ...formData, fullName: text })}
+                    placeholder="Enter full name"
+                    placeholderTextColor={palette.textMuted}
+                />
             </View>
 
-            <Text style={styles.passwordRequirement}>
-              Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters
-            </Text>
+            <View style={styles.formGroup}>
+                <Text style={styles.inputLabel}>Email Address</Text>
+                <TextInput
+                    style={styles.input}
+                    value={formData.email}
+                    onChangeText={(text) => setFormData({ ...formData, email: text })}
+                    placeholder="Enter email address"
+                    keyboardType="email-address"
+                    placeholderTextColor={palette.textMuted}
+                />
+            </View>
 
-            {/* Change Password Button */}
-            <Pressable 
-              style={[styles.changePasswordBtn, saving && styles.saveBtnDisabled]} 
-              onPress={handleChangePassword}
-              disabled={saving}>
-              {saving ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark" size={18} color="#ffffff" />
-                  <Text style={styles.saveBtnText}>Update Password</Text>
-                </>
-              )}
-            </Pressable>
-          </View>
+            <View style={styles.rowInputs}>
+                <View style={[styles.formGroup, {flex: 1}]}>
+                    <Text style={styles.inputLabel}>Phone Number</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={formData.phone}
+                        onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                        placeholder="Enter phone"
+                        keyboardType="phone-pad"
+                        placeholderTextColor={palette.textMuted}
+                    />
+                </View>
+                <View style={[styles.formGroup, {flex: 1}]}>
+                    <Text style={styles.inputLabel}>Location</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={formData.location}
+                        onChangeText={(text) => setFormData({ ...formData, location: text })}
+                        placeholder="City, Country"
+                        placeholderTextColor={palette.textMuted}
+                    />
+                </View>
+            </View>
 
-          {/* Action Buttons */}
-          <View style={styles.buttonContainer}>
-            <Pressable style={styles.cancelBtn} onPress={() => loadProfileData()}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
-            </Pressable>
             <Pressable 
-              style={[styles.saveBtn, saving && styles.saveBtnDisabled]} 
-              onPress={handleSaveChanges}
-              disabled={saving}>
-              {saving ? (
-                <ActivityIndicator size="small" color="#ffffff" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark" size={18} color="#ffffff" />
-                  <Text style={styles.saveBtnText}>Save Changes</Text>
-                </>
-              )}
+                style={({pressed}) => [styles.saveBtn, pressed && styles.btnPressed]}
+                onPress={handleSaveChanges}
+                disabled={saving}
+            >
+                {saving ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                    <>
+                        <Ionicons name="save-outline" size={18} color="#fff" />
+                        <Text style={styles.saveBtnText}>Save Changes</Text>
+                    </>
+                )}
             </Pressable>
-          </View>
         </View>
 
-        {/* Security Note */}
-        <View style={styles.securityNote}>
-          <Ionicons name="shield-checkmark" size={24} color={palette.success} />
-          <View style={styles.securityTextContainer}>
-            <Text style={styles.securityTitle}>Your data is secure</Text>
-            <Text style={styles.securityDesc}>All your personal information is encrypted and stored securely. We never share your data with third parties without your consent.</Text>
-          </View>
+        {/* Security Section */}
+        <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+                <Ionicons name="shield-checkmark-outline" size={20} color={palette.primary} />
+                <Text style={styles.sectionTitle}>Security</Text>
+            </View>
+            <View style={styles.divider} />
+            
+            <View style={styles.formGroup}>
+                <Text style={styles.inputLabel}>Current Password</Text>
+                <View style={styles.passwordInputContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        value={passwordData.current}
+                        onChangeText={(text) => setPasswordData({ ...passwordData, current: text })}
+                        placeholder="Current password"
+                        secureTextEntry={!showPasswords.current}
+                        placeholderTextColor={palette.textMuted}
+                    />
+                    <Pressable onPress={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}>
+                        <Ionicons name={showPasswords.current ? "eye-off-outline" : "eye-outline"} size={20} color={palette.textSecondary} />
+                    </Pressable>
+                </View>
+            </View>
+
+            <View style={styles.formGroup}>
+                <Text style={styles.inputLabel}>New Password</Text>
+                <View style={styles.passwordInputContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        value={passwordData.new}
+                        onChangeText={(text) => setPasswordData({ ...passwordData, new: text })}
+                        placeholder="New password"
+                        secureTextEntry={!showPasswords.new}
+                        placeholderTextColor={palette.textMuted}
+                    />
+                    <Pressable onPress={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}>
+                        <Ionicons name={showPasswords.new ? "eye-off-outline" : "eye-outline"} size={20} color={palette.textSecondary} />
+                    </Pressable>
+                </View>
+            </View>
+
+            <View style={styles.formGroup}>
+                <Text style={styles.inputLabel}>Confirm New Password</Text>
+                <View style={styles.passwordInputContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        value={passwordData.confirm}
+                        onChangeText={(text) => setPasswordData({ ...passwordData, confirm: text })}
+                        placeholder="Confirm new password"
+                        secureTextEntry={!showPasswords.confirm}
+                        placeholderTextColor={palette.textMuted}
+                    />
+                    <Pressable onPress={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}>
+                        <Ionicons name={showPasswords.confirm ? "eye-off-outline" : "eye-outline"} size={20} color={palette.textSecondary} />
+                    </Pressable>
+                </View>
+            </View>
+
+            <Pressable 
+                style={({pressed}) => [styles.passwordBtn, pressed && styles.btnPressed]}
+                onPress={handleChangePassword}
+                disabled={saving}
+            >
+                 <Text style={styles.passwordBtnText}>Update Password</Text>
+            </Pressable>
         </View>
+
       </ScrollView>
-
-      {/* Success Modal */}
-      {saveSuccess && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.successModal}>
-            <View style={styles.successIconContainer}>
-              <Ionicons name="checkmark-circle" size={64} color="#22c55e" />
-            </View>
-            <Text style={styles.successTitle}>Changes Saved!</Text>
-            <Text style={styles.successMessage}>Your profile has been updated successfully.</Text>
-          </View>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -441,452 +355,208 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: palette.background,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: palette.muted,
-  },
-  scrollContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    paddingBottom: 40,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    paddingTop: 24,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
     gap: 12,
   },
-  hamburgerBtn: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  hamburgerIcon: {
-    fontSize: 24,
-    color: palette.text,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  logoBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoLetter: {
-    color: '#fff',
-    fontWeight: '700',
+  loadingText: {
     fontSize: 16,
+    color: palette.textSecondary,
+    fontWeight: '500',
   },
-  brandTitle: {
-    color: palette.text,
-    fontSize: 15,
-    fontWeight: '700',
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+    gap: 20,
   },
-  brandSubtitle: {
-    color: palette.muted,
-    fontSize: 11,
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    justifyContent: 'center',
-  },
-  logoutIcon: {
-    fontSize: 18,
-    color: '#dc2626',
-  },
-  logoutText: {
-    color: '#dc2626',
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  menuOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 999,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 300,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1000,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    shadowOffset: { width: 3, height: 0 },
-    paddingTop: 20,
-  },
-  menuHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  menuTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: palette.text,
-  },
-  closeIcon: {
-    fontSize: 24,
-    color: palette.muted,
-    fontWeight: '600',
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: palette.border,
-    marginHorizontal: 16,
-    marginVertical: 8,
-  },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginHorizontal: 10,
+  headerTitleContainer: {
     marginBottom: 4,
-    borderRadius: 10,
-    backgroundColor: '#f8f9fa',
-    gap: 14,
-  },
-  dropdownIcon: {
-    fontSize: 28,
-  },
-  itemContent: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  dropdownText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: palette.text,
-  },
-  dropdownSubtext: {
-    fontSize: 12,
-    color: palette.muted,
-    marginTop: 2,
-  },
-  headerSection: {
-    marginBottom: 24,
   },
   pageTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: palette.text,
-    marginBottom: 6,
   },
   pageSubtitle: {
     fontSize: 14,
-    color: palette.textLight,
+    color: palette.textSecondary,
+    marginTop: 4,
   },
-  coverSection: {
-    marginBottom: 32,
+  
+  // Profile Card
+  profileCard: {
+    backgroundColor: palette.card,
+    borderRadius: 24,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: palette.border,
+    overflow: 'hidden',
     alignItems: 'center',
+    paddingBottom: 24,
   },
   coverBanner: {
+    height: 100,
     width: '100%',
-    height: 120,
-    backgroundColor: palette.primary,
-    borderRadius: 12,
-    marginBottom: 0,
+    backgroundColor: palette.primaryLight,
   },
-  changeCoverBtn: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 8,
-  },
-  changeCoverText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  profilePictureContainer: {
-    alignItems: 'center',
+  avatarContainer: {
     marginTop: -50,
+    position: 'relative',
     marginBottom: 12,
   },
-  profilePicture: {
+  avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
     backgroundColor: palette.primary,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 4,
-    borderColor: '#ffffff',
-    marginBottom: 8,
+    borderColor: palette.card,
   },
-  profileInitial: {
-    fontSize: 42,
+  avatarText: {
+    fontSize: 36,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#fff',
   },
-  changeProfilePicBtn: {
+  editAvatarBtn: {
     position: 'absolute',
     bottom: 0,
-    right: -8,
+    right: 0,
+    backgroundColor: palette.text,
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: palette.background,
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: palette.card,
   },
-  changeProfilePicText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: palette.primary,
-    marginTop: 8,
+  profileInfoValues: {
+    alignItems: 'center',
+    gap: 4,
   },
-  mainCard: {
-    backgroundColor: palette.card,
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: palette.border,
-    marginBottom: 20,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  twoColumnSection: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
-  },
-  flex1: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  sectionTitle: {
-    fontSize: 12,
+  profileNameDisplay: {
+    fontSize: 20,
     fontWeight: '700',
     color: palette.text,
-    marginBottom: 8,
-    letterSpacing: 0.5,
   },
-  input: {
-    backgroundColor: '#f9fafb',
+  profileRoleDisplay: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: palette.textSecondary,
+  },
+
+  // Section Cards
+  sectionCard: {
+    backgroundColor: palette.card,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: palette.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
     borderWidth: 1,
     borderColor: palette.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: palette.text,
-    marginBottom: 6,
   },
-  helperText: {
-    fontSize: 12,
-    color: palette.textLight,
-    fontStyle: 'italic',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: palette.border,
-    marginVertical: 20,
-  },
-  passwordHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 20,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: palette.border,
+    marginBottom: 16,
   },
-  passwordTitle: {
+  sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: palette.text,
   },
+  divider: {
+    height: 1,
+    backgroundColor: palette.border,
+    marginBottom: 20,
+  },
+  formGroup: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: palette.text,
+  },
+  input: {
+    backgroundColor: palette.inputBg,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: palette.border,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: palette.text,
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  saveBtn: {
+    backgroundColor: palette.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 8,
+    shadowColor: palette.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  btnPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
+  saveBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
   passwordInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: palette.inputBg,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: palette.border,
-    borderRadius: 8,
-    backgroundColor: '#f9fafb',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
   },
   passwordInput: {
     flex: 1,
     paddingVertical: 12,
-    fontSize: 14,
+    fontSize: 15,
     color: palette.text,
   },
-  eyeIcon: {
-    padding: 8,
-  },
-  passwordRequirement: {
-    fontSize: 12,
-    color: palette.textLight,
-    backgroundColor: '#f0f9ff',
-    borderLeftWidth: 3,
-    borderLeftColor: palette.primary,
-    paddingLeft: 10,
-    paddingVertical: 8,
-    marginTop: 12,
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    marginBottom: 20,
-  },
-  logoutText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: palette.danger,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 12,
-  },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: palette.border,
-    alignItems: 'center',
+  passwordBtn: {
     backgroundColor: palette.card,
-  },
-  cancelBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: palette.text,
-  },
-  saveBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: palette.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  saveBtnDisabled: {
-    opacity: 0.6,
-  },
-  saveBtnSuccess: {
-    backgroundColor: '#22c55e',
-  },
-  saveBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  changePasswordBtn: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#f59e0b',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 16,
-  },
-  securityNote: {
-    flexDirection: 'row',
-    gap: 12,
-    padding: 16,
-    backgroundColor: '#f0fdf4',
     borderWidth: 1,
-    borderColor: '#bbf7d0',
-    borderRadius: 8,
-  },
-  securityTextContainer: {
-    flex: 1,
-  },
-  securityTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: palette.success,
-    marginBottom: 4,
-  },
-  securityDesc: {
-    fontSize: 12,
-    color: palette.textLight,
-    lineHeight: 18,
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    borderColor: palette.primary,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 8,
   },
-  successModal: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 32,
-    alignItems: 'center',
-    width: '85%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  successIconContainer: {
-    marginBottom: 16,
-  },
-  successTitle: {
-    fontSize: 20,
+  passwordBtnText: {
+    color: palette.primary,
+    fontSize: 16,
     fontWeight: '700',
-    color: palette.text,
-    marginBottom: 8,
-  },
-  successMessage: {
-    fontSize: 14,
-    color: palette.textLight,
-    textAlign: 'center',
   },
 });
+

@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 // import NoticesScreen from '../components/NoticesScreen';
-import SideMenu from '../components/SideMenu';
+// import SideMenu from '../components/SideMenu'; // Handled by AppHeader
+import AppHeader from '../components/AppHeader';
 
 const palette = {
   background: '#F0F2F5', // Slightly darker/blueish gray for contrast
@@ -24,35 +25,40 @@ const palette = {
 export default function ParentDashboard() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const [menuOpen, setMenuOpen] = React.useState(false);
-  const parentName = "Mr. Rikhotso"; // Placeholder for dynamic data
+  // const [menuOpen, setMenuOpen] = React.useState(false); // Handled by AppHeader
+  // const parentName = "Mr. Rikhotso"; // Handled by AppHeader
 
-  const handleLogout = () => {
-    router.push('/(tabs)' as never);
-  };
+  // Mock data for learners
+  const MOCK_LEARNERS = [
+    { 
+      id: '1', 
+      name: 'Mikhenso Rikhotso', 
+      grade: 'Grade 12', 
+      studentId: '2020155260088', 
+      initials: 'MR',
+      monthlyFee: 'R 2,700',
+      status: 'Overdue' 
+    },
+    { 
+      id: '2', 
+      name: 'Amukelani Rikhotso', 
+      grade: 'Grade 8', 
+      studentId: '2024155260099', 
+      initials: 'AR',
+      monthlyFee: 'R 2,100',
+      status: 'Paid' 
+    },
+  ];
+
+  const [selectedLearner, setSelectedLearner] = React.useState(MOCK_LEARNERS[0]);
+  const [isDropdownOpen, setDropdownOpen] = React.useState(false);
+
+  // handleLogout is internal to AppHeader now
 
   return (
     <SafeAreaView style={styles.safeArea}>
       
-      {/* Top Navigation Bar */}
-      <View style={styles.topNavbar}>
-        <View style={styles.navLeft}>
-           <Pressable onPress={() => setMenuOpen(true)} style={styles.menuBtn}>
-              <Ionicons name="menu" size={28} color={palette.text} />
-           </Pressable>
-           <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeLabel}>Welcome,</Text>
-              <Text style={styles.welcomeName}>{parentName}</Text>
-           </View>
-        </View>
-        <Pressable onPress={() => router.push('/profile' as never)}>
-          <View style={styles.profileImageContainer}>
-             <Text style={styles.profileInitials}>MR</Text>
-          </View>
-        </Pressable>
-      </View>
-
-      <SideMenu isVisible={menuOpen} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />
+      <AppHeader />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
@@ -117,27 +123,71 @@ export default function ParentDashboard() {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Learner Overview</Text>
+        <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Learner Overview</Text>
+            <Pressable 
+                style={styles.learnerSwitchBtn}
+                onPress={() => setDropdownOpen(!isDropdownOpen)}
+            >
+                <Text style={styles.learnerSwitchText}>{isDropdownOpen ? 'Close' : 'Switch Child'}</Text>
+                <Ionicons name={isDropdownOpen ? "chevron-up" : "chevron-down"} size={16} color={palette.primary} />
+            </Pressable>
+        </View>
+
+        {isDropdownOpen && (
+            <View style={styles.dropdownContainer}>
+                {MOCK_LEARNERS.map((learner) => (
+                    <Pressable 
+                        key={learner.id}
+                        style={[
+                            styles.dropdownItem,
+                            selectedLearner.id === learner.id && styles.dropdownItemSelected
+                        ]}
+                        onPress={() => {
+                            setSelectedLearner(learner);
+                            setDropdownOpen(false);
+                        }}
+                    >
+                        <Text style={[
+                            styles.dropdownItemText,
+                            selectedLearner.id === learner.id && styles.dropdownItemTextSelected
+                        ]}>
+                            {learner.name}
+                        </Text>
+                        {selectedLearner.id === learner.id && (
+                            <Ionicons name="checkmark" size={16} color={palette.primary} />
+                        )}
+                    </Pressable>
+                ))}
+            </View>
+        )}
 
         {/* Learner Card */}
         <View style={styles.learnerCard}>
            <View style={styles.learnerHeader}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>MR</Text>
+                <Text style={styles.avatarText}>{selectedLearner.initials}</Text>
               </View>
               <View style={styles.learnerInfo}>
-                 <Text style={styles.learnerName}>Mikhenso Rikhotso</Text>
-                 <Text style={styles.learnerDetails}>Grade 12 • ID: 2020155260088</Text>
+                 <Text style={styles.learnerName}>{selectedLearner.name}</Text>
+                 <Text style={styles.learnerDetails}>{selectedLearner.grade} • ID: {selectedLearner.studentId}</Text>
                  
                  <View style={styles.statusRow}>
                    <View style={[styles.statusBadge, { backgroundColor: palette.success }]}>
                       <Ionicons name="checkmark-circle" size={12} color="white" />
                       <Text style={styles.statusTextWhite}>Facility Linked</Text>
                    </View>
-                   <View style={[styles.statusBadge, { backgroundColor: palette.danger }]}>
-                      <Ionicons name="alert-circle" size={12} color="white" />
-                      <Text style={styles.statusTextWhite}>Overdue</Text>
-                   </View>
+                   {selectedLearner.status === 'Overdue' ? (
+                       <View style={[styles.statusBadge, { backgroundColor: palette.danger }]}>
+                          <Ionicons name="alert-circle" size={12} color="white" />
+                          <Text style={styles.statusTextWhite}>Overdue</Text>
+                       </View>
+                   ) : (
+                       <View style={[styles.statusBadge, { backgroundColor: palette.success }]}>
+                          <Ionicons name="checkmark-circle" size={12} color="white" />
+                          <Text style={styles.statusTextWhite}>Paid</Text>
+                       </View>
+                   )}
                  </View>
               </View>
            </View>
@@ -147,7 +197,7 @@ export default function ParentDashboard() {
            <View style={styles.financialRows}>
               <View style={styles.financialRow}>
                  <Text style={styles.financialLabel}>Monthly Fee</Text>
-                 <Text style={styles.financialValue}>R 2,700</Text>
+                 <Text style={styles.financialValue}>{selectedLearner.monthlyFee}</Text>
               </View>
               <View style={styles.dividerLight} />
               <View style={styles.financialRow}>
