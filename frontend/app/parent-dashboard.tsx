@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View, Pressable, useWindowDimensions, Ima
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import NoticesScreen from '../components/NoticesScreen';
+// import NoticesScreen from '../components/NoticesScreen';
 import SideMenu from '../components/SideMenu';
 
 const palette = {
@@ -152,17 +152,20 @@ export default function ParentDashboard() {
               <View style={styles.dividerLight} />
               <View style={styles.financialRow}>
                  <Text style={styles.financialLabel}>Paid</Text>
-                 <Text style={styles.financialValue}>R 0</Text>
+                 <Text style={[styles.financialValue, { color: palette.success }]}>R 0</Text>
               </View>
               <View style={styles.dividerLight} />
               <View style={styles.financialRow}>
                  <Text style={styles.financialLabel}>Outstanding</Text>
-                 <Text style={styles.financialValue}>R 2,700</Text>
+                 <Text style={[styles.financialValue, { color: palette.danger, fontWeight: '700' }]}>R 2,700</Text>
               </View>
               <View style={styles.dividerLight} />
               <View style={styles.financialRow}>
                  <Text style={styles.financialLabel}>Next Due Date</Text>
-                 <Text style={styles.financialValueBold}>30/12/2025</Text>
+                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="calendar-outline" size={14} color={palette.textSecondary} style={{ marginRight: 6 }} />
+                    <Text style={[styles.financialValueBold, { color: palette.text }]}>30/12/2025</Text>
+                 </View>
               </View>
            </View>
 
@@ -183,19 +186,34 @@ export default function ParentDashboard() {
         <View style={styles.breakdownCard}>
            <View style={styles.breakdownRow}>
               <Text style={styles.breakdownLabel}>Annual Fee</Text>
-              <Text style={styles.breakdownValue}>R 32,400</Text>
+              <Text style={[styles.breakdownValue, { color: palette.primary, fontWeight: '800', fontSize: 16 }]}>R 32,400</Text>
            </View>
            <View style={styles.divider} />
            <View style={styles.breakdownRow}>
               <Text style={styles.breakdownLabel}>Term Fee</Text>
-              <Text style={styles.breakdownValue}>R 8,100</Text>
+              <Text style={[styles.breakdownValue, { color: palette.text }]}>R 8,100</Text>
+           </View>
+           <View style={styles.divider} />
+           <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Registration Fee</Text>
+              <Text style={[styles.breakdownValue, { color: palette.textSecondary }]}>R 1,500</Text>
+           </View>
+           <View style={styles.divider} />
+           <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Re-registration Fee</Text>
+              <Text style={[styles.breakdownValue, { color: palette.textSecondary }]}>R 500</Text>
+           </View>
+           <View style={styles.divider} />
+           <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>Sport Fee</Text>
+              <Text style={[styles.breakdownValue, { color: palette.textSecondary }]}>R 850</Text>
            </View>
         </View>
 
-        {/* Notices Section (Kept from previous, but de-emphasized compared to financial data) */}
-        <View style={styles.noticesContainer}>
+        {/* Notices Section (Removed) */}
+        {/* <View style={styles.noticesContainer}>
             <NoticesScreen />
-        </View>
+        </View> */}
 
         <View style={{ height: 40 }} /> 
       </ScrollView>
